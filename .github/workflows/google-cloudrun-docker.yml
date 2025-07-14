@@ -5,11 +5,11 @@ on:
     branches: ['main']
 
 env:
-  PROJECT_ID: kleenex-promo # TODO: update Google Cloud project id
-  GAR_NAME: la-fiest-kleenbebe
-  GAR_LOCATION: us-central1 # TODO: update Artifact Registry location
-  SERVICE: kleenbebe-dashboard # TODO: update Cloud Run service name
-  REGION: us-central1 # TODO: update Cloud Run service region
+  PROJECT_ID: kleenex-promo
+  GAR_NAME: scj-este-verano-dash
+  GAR_LOCATION: northamerica-south1
+  SERVICE: scj-este-verano-dash
+  REGION: northamerica-south1
 
 jobs:
   deploy:
