@@ -39,8 +39,8 @@ export default function Participations() {
 					documented: item.user.documentation_validated,
 					ine_front_url: item.user.ine_front_url || '',
 					ine_back_url: item.user.ine_back_url || '',
-					proof_of_residence_url: item.user.proof_of_residence_url || '',
-					tax_status_certificate_url: item.user.tax_status_certificate_url || '',
+					physical_terms: item.user.physical_terms || false,
+					date_of_birth: item.user.date_of_birth || '',
 				};
 
 				const result: Participation = {
@@ -101,9 +101,12 @@ export default function Participations() {
 		}));
 	};
 
-
 	const onDocumentationConfirm = async (participation: Participation) => {
-		if (!documentationChecks.ine_front || !documentationChecks.ine_back || !documentationChecks.proof_of_residence) {
+		if (
+			!documentationChecks.ine_front ||
+			!documentationChecks.ine_back ||
+			!documentationChecks.proof_of_residence
+		) {
 			toast({
 				title: 'Favor de confirmar todos los documentos',
 			});
@@ -136,7 +139,7 @@ export default function Participations() {
 		} catch (error) {
 			console.error('Error aceptando la documentacion: ', error);
 		}
-	}
+	};
 
 	const onDocumentationReject = async (participation: Participation) => {
 		try {
@@ -165,14 +168,14 @@ export default function Participations() {
 		} catch (error) {
 			console.error('Error rechazando la documentacion: ', error);
 		}
-	}
+	};
 
 	useEffect(() => {
 		fetchParticipations();
 	}, []);
 
 	const renderSubComponent = ({ row }: { row: Row<Participation> }) => {
-		const participation = row.original
+		const participation = row.original;
 		const user = participation.user;
 
 		const name = user.name;
@@ -183,8 +186,8 @@ export default function Participations() {
 
 		const ine_front_url = user.ine_front_url;
 		const ine_back_url = user.ine_back_url;
-		const proof_of_residence_url = user.proof_of_residence_url;
-		const tax_status_certificate_url = user.tax_status_certificate_url;
+		const physical_terms = user.physical_terms;
+		const date_of_birth = user.date_of_birth;
 		const documented = user.documented;
 
 		return (
@@ -193,8 +196,8 @@ export default function Participations() {
 					<strong>Nombre:</strong> {name}
 				</p>
 				<p>
-
-					<strong>Premio:</strong> {!isNaN(Number(prize)) ? `Cupon de ${prize}` : prize}
+					<strong>Premio:</strong>{' '}
+					{!isNaN(Number(prize)) ? `Cupon de ${prize}` : prize}
 				</p>
 				<p>
 					<strong>Numero de participacion:</strong> {priorityNumber}
@@ -202,73 +205,57 @@ export default function Participations() {
 				<p>
 					<strong>Email:</strong> {email}
 				</p>
+				<p>
+					<strong>Fecha de nacimiento:</strong> {date_of_birth}
+				</p>
+				{physical_terms ? (
+					<p className="text-green-500">Terminos fisicos aceptados</p>
+				) : (
+					<p className="text-red-500">Terminos fisicos no han sido aceptados</p>
+				)}
 				{address && (
 					<p>
 						<strong>Dirección:</strong> {address}
 					</p>
 				)}
-				{tax_status_certificate_url && (
-					<div>
-						<strong>Constancia de situación fiscal:</strong>{' '}
-						<a
-							href={settings.bucketURL + tax_status_certificate_url}
-							target='_blank'
-							rel='noreferrer'
-							className='bg-gray-400 p-1 rounded-md'
-						>
-							Ver
-						</a>
-					</div>
-				)}
 				{documented ? (
-					<p className='text-green-500'>Documentado</p>
+					<p className="text-green-500">Documentado</p>
 				) : (
-					<p className='text-red-500'>No documentado</p>
+					<p className="text-red-500">No documentado</p>
 				)}
-				<div className='flex p-4 gap-4'>
+				<div className="flex p-4 gap-4">
 					{ine_front_url && (
-						<div className='flex flex-col justify-center items-center'>
-							<p className='text-center font-bold'>INE Frontal</p>
-							<FullImage src={settings.bucketURL + ine_front_url} alt='INE Front'>
+						<div className="flex flex-col justify-center items-center">
+							<p className="text-center font-bold">INE Frontal</p>
+							<FullImage
+								src={settings.bucketURL + ine_front_url}
+								alt="INE Front"
+							>
 								<img
 									src={settings.bucketURL + ine_front_url}
-									alt='INE Front'
-									className='h-80 w-auto object-contain'
+									alt="INE Front"
+									className="h-80 w-auto object-contain"
 								/>
 							</FullImage>
 						</div>
 					)}
 					{ine_back_url && (
-						<div className='flex flex-col justify-center items-center'>
-							<p className='text-center font-bold'>INE Posterior</p>
-							<FullImage src={settings.bucketURL + ine_back_url} alt='INE Back'>
+						<div className="flex flex-col justify-center items-center">
+							<p className="text-center font-bold">INE Posterior</p>
+							<FullImage src={settings.bucketURL + ine_back_url} alt="INE Back">
 								<img
 									src={settings.bucketURL + ine_back_url}
-									alt='INE Back'
-									className='h-80 w-auto object-contain'
+									alt="INE Back"
+									className="h-80 w-auto object-contain"
 								/>
 							</FullImage>
 						</div>
 					)}
-					{proof_of_residence_url && (
-						<div className='flex flex-col justify-center items-center'>
-							<p className='text-center font-bold'>Comprobante de domicilio</p>
-							<FullImage src={settings.bucketURL + proof_of_residence_url} alt='Proof of residence'>
-								<img
-									src={settings.bucketURL + proof_of_residence_url}
-									alt='Proof of residence'
-									className='h-80 w-auto object-contain'
-								/>
-							</FullImage>
-						</div>
-					)}
-					{ine_front_url && ine_back_url && proof_of_residence_url && !documented && (
+					{ine_front_url && ine_back_url && !documented && (
 						<div>
-							<form className='flex flex-col gap-2'>
-								<div>
-									Confirmar documentacion:
-								</div>
-								<div className='flex-col flex [&>div]:flex [&>div]:gap-2 '>
+							<form className="flex flex-col gap-2">
+								<div>Confirmar documentacion:</div>
+								<div className="flex-col flex [&>div]:flex [&>div]:gap-2 ">
 									<div>
 										<input
 											type="checkbox"
@@ -276,7 +263,9 @@ export default function Participations() {
 											checked={documentationChecks.ine_front}
 											onChange={handleCheckboxChange}
 										/>
-										<label htmlFor="ine_front">He revisado el INE frontal.</label>
+										<label htmlFor="ine_front">
+											He revisado el INE frontal.
+										</label>
 									</div>
 									<div>
 										<input
@@ -285,7 +274,9 @@ export default function Participations() {
 											checked={documentationChecks.ine_back}
 											onChange={handleCheckboxChange}
 										/>
-										<label htmlFor="ine_back">He revisado el INE posterior.</label>
+										<label htmlFor="ine_back">
+											He revisado el INE posterior.
+										</label>
 									</div>
 									<div>
 										<input
@@ -295,11 +286,12 @@ export default function Participations() {
 											onChange={handleCheckboxChange}
 										/>
 
-										<label htmlFor="proof_of_residence">He revisado el comprobante de domicilio.</label>
+										<label htmlFor="proof_of_residence">
+											He revisado el comprobante de domicilio.
+										</label>
 									</div>
 								</div>
-								<div className='flex gap-2'>
-
+								<div className="flex gap-2">
 									<Button
 										type="button"
 										onClick={() => onDocumentationConfirm(participation)}
@@ -311,8 +303,10 @@ export default function Participations() {
 									>
 										Confirmar
 									</Button>
-									<Button type="button" onClick={() => onDocumentationReject(participation)}
-										variant='destructive'
+									<Button
+										type="button"
+										onClick={() => onDocumentationReject(participation)}
+										variant="destructive"
 									>
 										Rechazar
 									</Button>
