@@ -1,0 +1,66 @@
+name: Build and Deploy to Cloud Run
+
+on:
+  push:
+    branches: ['main']
+
+env:
+  PROJECT_ID: kleenex-promo # TODO: update Google Cloud project id
+  GAR_NAME: la-fiest-kleenbebe
+  GAR_LOCATION: us-central1 # TODO: update Artifact Registry location
+  SERVICE: kleenbebe-dashboard # TODO: update Cloud Run service name
+  REGION: us-central1 # TODO: update Cloud Run service region
+
+jobs:
+  deploy:
+    # Add 'id-token' with the intended permissions for workload identity federation
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      # BEGIN - Docker auth and build (NOTE: If you already have a container image, these Docker steps can be omitted)
+
+      # Authenticate Docker to Google Cloud Artifact Registry
+      - name: Docker Auth
+        id: docker-auth
+        run: |-
+          gcloud auth configure-docker "${{ env.GAR_LOCATION }}-docker.pkg.dev"
+
+      - name: Build and Push Container
+        run: |
+          docker build \
+            --build-arg VITE_REACT_APP_API_URL=${{ secrets.VITE_REACT_APP_API_URL }} \
+            --build-arg VITE_REACT_APP_TOKEN_NAME=${{ secrets.VITE_REACT_APP_TOKEN_NAME }} \
+            --build-arg VITE_REACT_APP_BUCKET_URL=${{ secrets.VITE_REACT_APP_BUCKET_URL }} \
+            -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_NAME }}/${{ env.SERVICE }}:${{ github.sha }}" ./
+          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_NAME }}/${{ env.SERVICE }}:${{ github.sha }}"
+
+      # END - Docker auth and build
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          # NOTE: If using a pre-built image, update the image name here
+          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_NAME }}/${{ env.SERVICE }}:${{ github.sha }}
+          env_vars: |
+            VITE_REACT_APP_API_URL=${{ secrets.VITE_REACT_APP_API_URL }}
+            VITE_REACT_APP_TOKEN_NAME=${{ secrets.VITE_REACT_APP_TOKEN_NAME }}
+            VITE_REACT_APP_BUCKET_URL=${{ secrets.VITE_REACT_APP_BUCKET_URL }}
+
+      # If required, use the Cloud Run url output in later steps
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}
