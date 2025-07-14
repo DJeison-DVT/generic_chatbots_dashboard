@@ -34,7 +34,7 @@ export default function Participations() {
 					terms: item.user.terms,
 					name: item.user.name,
 					email: item.user.email,
-					address: item.user.physical_address || '',
+					address: item.user.address || '',
 					complete: item.user.complete,
 					documented: item.user.documentation_validated,
 					ine_front_url: item.user.ine_front_url || '',
@@ -90,7 +90,6 @@ export default function Participations() {
 	const [documentationChecks, setDocumentationChecks] = useState({
 		ine_front: false,
 		ine_back: false,
-		proof_of_residence: false,
 	});
 
 	const handleCheckboxChange = (event: any) => {
@@ -102,11 +101,7 @@ export default function Participations() {
 	};
 
 	const onDocumentationConfirm = async (participation: Participation) => {
-		if (
-			!documentationChecks.ine_front ||
-			!documentationChecks.ine_back ||
-			!documentationChecks.proof_of_residence
-		) {
+		if (!documentationChecks.ine_front || !documentationChecks.ine_back) {
 			toast({
 				title: 'Favor de confirmar todos los documentos',
 			});
@@ -278,18 +273,6 @@ export default function Participations() {
 											He revisado el INE posterior.
 										</label>
 									</div>
-									<div>
-										<input
-											type="checkbox"
-											name="proof_of_residence"
-											checked={documentationChecks.proof_of_residence}
-											onChange={handleCheckboxChange}
-										/>
-
-										<label htmlFor="proof_of_residence">
-											He revisado el comprobante de domicilio.
-										</label>
-									</div>
 								</div>
 								<div className="flex gap-2">
 									<Button
@@ -297,8 +280,7 @@ export default function Participations() {
 										onClick={() => onDocumentationConfirm(participation)}
 										disabled={
 											!documentationChecks.ine_front ||
-											!documentationChecks.ine_back ||
-											!documentationChecks.proof_of_residence
+											!documentationChecks.ine_back
 										}
 									>
 										Confirmar
