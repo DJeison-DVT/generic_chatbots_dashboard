@@ -105,6 +105,11 @@ export const columns: ColumnDef<Participation>[] = [
 	{
 		accessorKey: 'prize',
 		header: 'Premio',
+		cell: ({ row }) => {
+			var prize = row.getValue<string>('prize');
+			prize = prize === 'physical_options' ? 'Físico' : prize;
+			return prize ? prize : null;
+		},
 	},
 	{
 		accessorKey: 'prize_type',
@@ -113,10 +118,7 @@ export const columns: ColumnDef<Participation>[] = [
 			<TypeDataTableColumnHeaderCheckbox
 				column={column}
 				title="Tipo"
-				options={[
-					'physical',
-					'digital',
-				]}
+				options={['physical', 'digital']}
 				displayOptions={StatusDisplayOptions}
 			/>
 		),
