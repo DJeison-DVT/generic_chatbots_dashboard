@@ -97,7 +97,7 @@ export function DataTable<TData, TValue>({
 	}, [searchParamsState, navigate]);
 
 	useEffect(() => {
-		const params = new URLSearchParams(searchParamsState);
+		const params = new URLSearchParams();
 		let { pageIndex } = table.getState().pagination;
 
 		// Check if filters have changed (not just pagination)
@@ -161,11 +161,7 @@ export function DataTable<TData, TValue>({
 		if (newParamsString !== searchParamsState) {
 			setSearchParamsState(newParamsString);
 		}
-	}, [table.getState().pagination, columnFilters, searchParamsState]);
-
-	const resetFilters = () => {
-		table.setPageIndex(0);
-	};
+	}, [table.getState().pagination, columnFilters, previousFilters]);
 
 	return (
 		<div className="flex flex-col flex-1 gap-3 p-10 pb-5 max-h-full">
@@ -233,7 +229,13 @@ export function DataTable<TData, TValue>({
 				</div>
 			</ScrollArea>
 			<div className="flex justify-between">
-				<Button disabled={isLoading} onClick={resetFilters}>
+				<Button
+					disabled={isLoading}
+					onClick={() =>
+						(window.location.href =
+							'/dashboard/participations?status=complete%2Cdocuments&prize_type=digital%2Cphysical')
+					}
+				>
 					<RefreshCw />
 				</Button>
 				<DataTablePagination table={table} />

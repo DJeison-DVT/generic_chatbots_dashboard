@@ -71,7 +71,7 @@ export default function Sidebar() {
 								<Gauge />
 								Dashboard
 							</NavigationTab>
-							<NavigationTab to="/dashboard/participations">
+							<NavigationTab to="/dashboard/participations?status=complete%2Cdocuments&prize_type=digital%2Cphysical">
 								<ShoppingCart />
 								Participaciones
 							</NavigationTab>

@@ -218,10 +218,6 @@ export default function Participations() {
 		}
 	};
 
-	useEffect(() => {
-		console.log('Page count updated:', pageCount);
-	}, [pageCount]);
-
 	const renderSubComponent = ({ row }: { row: Row<Participation> }) => {
 		const participation = row.original;
 		const user = participation.user;
