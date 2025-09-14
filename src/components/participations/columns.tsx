@@ -61,14 +61,14 @@ export const columns: ColumnDef<Participation>[] = [
 		},
 	},
 	{
-		accessorKey: 'priorityNumber',
-		id: 'priorityNumber',
+		accessorKey: 'priority_number',
+		id: 'priority_number',
 		header: ({ column }) => (
 			<DataTableColumnHeaderSearch column={column} title="Num" />
 		),
 		cell: ({ row }) => {
-			const priorityNumber = row.getValue<number>('priorityNumber');
-			return <div>{priorityNumber > 0 ? priorityNumber : ''}</div>;
+			const priority_number = row.getValue<number>('priority_number');
+			return <div>{priority_number > 0 ? priority_number : ''}</div>;
 		},
 	},
 	{
@@ -118,7 +118,6 @@ export const columns: ColumnDef<Participation>[] = [
 				column={column}
 				title="Tipo"
 				id="prize_type"
-				defaultOptions={['physical', 'digital']}
 				options={['physical', 'digital']}
 				displayOptions={StatusDisplayOptions}
 			/>
@@ -146,13 +145,13 @@ export const columns: ColumnDef<Participation>[] = [
 					'fullfiled',
 				]}
 				id="status"
-				defaultOptions={['documents', 'complete']}
 				displayOptions={StatusDisplayOptions}
 			/>
 		),
 		filterFn: isSelectedFilterFn,
 		cell: ({ row }) => {
-			const status = row.getValue<string>('status') as Status;
+			var status = row.getValue<string>('status') as Status;
+			status = status.toLowerCase() as Status;
 			return status ? (
 				<div>
 					{StatusDisplayOptions[status] ? StatusDisplayOptions[status] : status}

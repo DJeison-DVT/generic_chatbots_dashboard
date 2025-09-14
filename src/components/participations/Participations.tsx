@@ -18,12 +18,41 @@ export default function Participations() {
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [searchParams] = useSearchParams();
 	const pageSize = 10;
+	const [pageCount, setPageCount] = useState(0);
 
 	const fetchParticipations = async () => {
+		setParticipations([]);
 		setIsLoading(true);
 		try {
 			const params = searchParams.toString();
-			if (!params) return;
+			if (!params) {
+				setIsLoading(false);
+				return;
+			}
+
+			const adjustedParams = (() => {
+				const urlParams = new URLSearchParams(params);
+				const newParams = new URLSearchParams();
+
+				// Copy all parameters first
+				urlParams.forEach((value, key) => {
+					// Handle array parameters that might be comma-separated
+					if (key === 'status' || key === 'prize_type') {
+						// Split comma-separated values and add as multiple params
+						const values = value.split(',').filter((v) => v.trim());
+						values.forEach((v) => {
+							if (v.trim()) {
+								newParams.append(key, v.trim());
+							}
+						});
+					} else {
+						// Keep other parameters as-is
+						newParams.set(key, value);
+					}
+				});
+
+				return newParams.toString();
+			})();
 
 			const response = await authorizedFetch(
 				settings.apiUrl +
@@ -31,11 +60,20 @@ export default function Participations() {
 					'?limit=' +
 					pageSize +
 					'&' +
-					params,
+					adjustedParams,
 			);
-			const data = await response.json();
 
-			const transformedData = data.map((item: any) => {
+			// Handle 404 specifically - no participations found
+			if (response.status === 404) {
+				setIsLoading(false);
+				return;
+			}
+
+			const data = await response.json();
+			const participationsData = data.participations;
+			setPageCount(Math.ceil(data.count / pageSize));
+
+			const transformedData = participationsData.map((item: any) => {
 				const participationId = item._id;
 				const userId = item.user._id;
 
@@ -60,7 +98,7 @@ export default function Participations() {
 					ticketUrl: item.ticket_url,
 					ticketAttempts: item.ticket_attempts,
 					datetime: new Date(item.datetime + 'Z'),
-					priorityNumber: String(item.priority_number),
+					priority_number: String(item.priority_number),
 					status: item.status,
 					flow: item.flow,
 					prize: item.prize,
@@ -180,6 +218,10 @@ export default function Participations() {
 		}
 	};
 
+	useEffect(() => {
+		console.log('Page count updated:', pageCount);
+	}, [pageCount]);
+
 	const renderSubComponent = ({ row }: { row: Row<Participation> }) => {
 		const participation = row.original;
 		const user = participation.user;
@@ -188,7 +230,7 @@ export default function Participations() {
 		const email = user.email;
 		const address = user.address;
 		const prize = participation.prize;
-		const priorityNumber = participation.priorityNumber;
+		const priority_number = participation.priority_number;
 
 		const ine_front_url = user.ine_front_url;
 		const ine_back_url = user.ine_back_url;
@@ -206,7 +248,7 @@ export default function Participations() {
 					{!isNaN(Number(prize)) ? `Cupon de ${prize}` : prize}
 				</p>
 				<p>
-					<strong>Numero de participacion:</strong> {priorityNumber}
+					<strong>Numero de participacion:</strong> {priority_number}
 				</p>
 				<p>
 					<strong>Email:</strong> {email}
@@ -319,6 +361,7 @@ export default function Participations() {
 				data={participations}
 				isLoading={isLoading}
 				getRowCanExpand={() => true}
+				pageCount={pageCount}
 				renderSubComponent={renderSubComponent}
 			/>
 		</>

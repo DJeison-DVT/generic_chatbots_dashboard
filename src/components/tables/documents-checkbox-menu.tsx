@@ -18,7 +18,6 @@ interface DataTableColumnHeaderProps<TData, TValue> {
 	className?: string;
 	options: string[];
 	id: string;
-	defaultOptions: string[];
 	displayOptions: { [key: string]: string };
 }
 
@@ -28,7 +27,6 @@ export default function DocumentsDataTableColumnHeaderCheckbox<TData, TValue>({
 	className,
 	options,
 	id,
-	defaultOptions,
 	displayOptions,
 }: DataTableColumnHeaderProps<TData, TValue>) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +36,7 @@ export default function DocumentsDataTableColumnHeaderCheckbox<TData, TValue>({
 		return <div className={cn(className)}>{title}</div>;
 	}
 	const [selectedOptions, setSelectedOptions] = useState(
-		searchParams.get(id)?.split(',') || defaultOptions,
+		searchParams.get(id)?.split(',') || [],
 	);
 
 	const handleOptionChange = (checked: boolean, id: string) => {

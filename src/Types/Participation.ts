@@ -5,7 +5,7 @@ export type Participation = {
 	user: User;
 	ticketUrl: string;
 	ticketAttempts: number;
-	priorityNumber: string;
+	priority_number: string;
 	datetime: Date;
 	status: string;
 	flow: string;

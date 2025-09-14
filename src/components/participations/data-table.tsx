@@ -32,6 +32,7 @@ interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
 	isLoading: boolean;
+	pageCount: number;
 	renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement;
 	getRowCanExpand: (row: Row<TData>) => boolean;
 }
@@ -40,6 +41,7 @@ export function DataTable<TData, TValue>({
 	columns,
 	data,
 	isLoading,
+	pageCount,
 	renderSubComponent,
 	getRowCanExpand,
 }: DataTableProps<TData, TValue>) {
@@ -55,19 +57,15 @@ export function DataTable<TData, TValue>({
 		[],
 	);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
-		{ id: 'priorityNumber', value: searchParams.get('priorityNumber') || '' },
+		{ id: 'priority_number', value: searchParams.get('priority_number') || '' },
 		{ id: 'phone', value: searchParams.get('phone') || '' },
 		{
 			id: 'status',
-			value: searchParams.get('status')
-				? searchParams.get('status')?.split(',')
-				: [],
+			value: searchParams.getAll('status'),
 		},
 		{
 			id: 'prize_type',
-			value: searchParams.get('prize_type')
-				? searchParams.get('prize_type')?.split(',')
-				: [],
+			value: searchParams.getAll('prize_type'),
 		},
 	]);
 
@@ -76,6 +74,7 @@ export function DataTable<TData, TValue>({
 		columns,
 		manualFiltering: true,
 		manualPagination: true,
+		pageCount,
 		getRowCanExpand,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
@@ -125,7 +124,7 @@ export function DataTable<TData, TValue>({
 
 		// Handle string filters
 		const stringFilters = [
-			{ id: 'priorityNumber', param: 'priorityNumber' },
+			{ id: 'priority_number', param: 'priority_number' },
 			{ id: 'phone', param: 'phone' },
 		];
 
@@ -165,7 +164,6 @@ export function DataTable<TData, TValue>({
 	}, [table.getState().pagination, columnFilters, searchParamsState]);
 
 	const resetFilters = () => {
-		table.resetColumnFilters();
 		table.setPageIndex(0);
 	};
 
