@@ -32,7 +32,6 @@ interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
 	isLoading: boolean;
-	onRefresh: () => Promise<void>;
 	renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement;
 	getRowCanExpand: (row: Row<TData>) => boolean;
 }
@@ -41,7 +40,6 @@ export function DataTable<TData, TValue>({
 	columns,
 	data,
 	isLoading,
-	onRefresh,
 	renderSubComponent,
 	getRowCanExpand,
 }: DataTableProps<TData, TValue>) {
@@ -50,14 +48,34 @@ export function DataTable<TData, TValue>({
 	]);
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
+	const [searchParamsState, setSearchParamsState] = useState(
+		searchParams.toString(),
+	);
+	const [previousFilters, setPreviousFilters] = useState<ColumnFiltersState>(
+		[],
+	);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
-		{ id: 'user.phone', value: searchParams.get('user.phone') || '' },
 		{ id: 'priorityNumber', value: searchParams.get('priorityNumber') || '' },
+		{ id: 'phone', value: searchParams.get('phone') || '' },
+		{
+			id: 'status',
+			value: searchParams.get('status')
+				? searchParams.get('status')?.split(',')
+				: [],
+		},
+		{
+			id: 'prize_type',
+			value: searchParams.get('prize_type')
+				? searchParams.get('prize_type')?.split(',')
+				: [],
+		},
 	]);
 
 	const table = useReactTable({
 		data,
 		columns,
+		manualFiltering: true,
+		manualPagination: true,
 		getRowCanExpand,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
@@ -66,11 +84,6 @@ export function DataTable<TData, TValue>({
 		onColumnFiltersChange: setColumnFilters,
 		getFilteredRowModel: getFilteredRowModel(),
 		getExpandedRowModel: getExpandedRowModel(),
-		initialState: {
-			pagination: {
-				pageIndex: Number(searchParams.get('page')) - 1 || 0,
-			},
-		},
 		state: {
 			sorting,
 			columnFilters,
@@ -81,8 +94,27 @@ export function DataTable<TData, TValue>({
 	});
 
 	useEffect(() => {
-		const params = new URLSearchParams(searchParams.toString());
-		const { pageIndex } = table.getState().pagination;
+		navigate({ search: searchParamsState }, { replace: true });
+	}, [searchParamsState, navigate]);
+
+	useEffect(() => {
+		const params = new URLSearchParams(searchParamsState);
+		let { pageIndex } = table.getState().pagination;
+
+		// Check if filters have changed (not just pagination)
+		const filtersChanged =
+			JSON.stringify(columnFilters) !== JSON.stringify(previousFilters);
+
+		// Reset page index if filters changed and we're not on page 0
+		if (filtersChanged && pageIndex > 0) {
+			table.setPageIndex(0);
+			pageIndex = 0; // Update local variable for URL params
+		}
+
+		// Update previous filters for next comparison
+		if (filtersChanged) {
+			setPreviousFilters([...columnFilters]);
+		}
 
 		// Handle pagination parameters
 		if (pageIndex === 0) {
@@ -91,27 +123,51 @@ export function DataTable<TData, TValue>({
 			params.set('page', String(pageIndex + 1));
 		}
 
-		// Handle column filters
-		const requiredParams = ['priorityNumber', 'phone'];
-		requiredParams.forEach((param) => {
-			const filter = columnFilters.find((filter) => filter.id === param);
-			if (filter && typeof filter.value === 'string') {
-				params.set(filter.id, filter.value);
+		// Handle string filters
+		const stringFilters = [
+			{ id: 'priorityNumber', param: 'priorityNumber' },
+			{ id: 'phone', param: 'phone' },
+		];
+
+		stringFilters.forEach(({ id, param }) => {
+			const filter = columnFilters.find((f) => f.id === id);
+			const value = filter?.value;
+
+			if (value && typeof value === 'string' && value.trim()) {
+				params.set(param, value);
 			} else {
 				params.delete(param);
 			}
 		});
 
-		// Handle status filter separately if needed
-		const statusFilter = columnFilters.find((filter) => filter.id === 'status');
-		if (statusFilter && Array.isArray(statusFilter.value)) {
-			params.set('status', statusFilter.value.join(','));
-		} else {
-			params.delete('status');
-		}
+		// Handle array filters
+		const arrayFilters = [
+			{ id: 'status', param: 'status' },
+			{ id: 'prize_type', param: 'prize_type' },
+		];
 
-		navigate({ search: params.toString() }, { replace: true });
-	}, [table.getState().pagination, columnFilters, searchParams, navigate]);
+		arrayFilters.forEach(({ id, param }) => {
+			const filter = columnFilters.find((f) => f.id === id);
+			const value = filter?.value;
+
+			if (value && Array.isArray(value) && value.length > 0) {
+				params.set(param, value.join(','));
+			} else {
+				params.delete(param);
+			}
+		});
+
+		const newParamsString = params.toString();
+
+		if (newParamsString !== searchParamsState) {
+			setSearchParamsState(newParamsString);
+		}
+	}, [table.getState().pagination, columnFilters, searchParamsState]);
+
+	const resetFilters = () => {
+		table.resetColumnFilters();
+		table.setPageIndex(0);
+	};
 
 	return (
 		<div className="flex flex-col flex-1 gap-3 p-10 pb-5 max-h-full">
@@ -179,7 +235,7 @@ export function DataTable<TData, TValue>({
 				</div>
 			</ScrollArea>
 			<div className="flex justify-between">
-				<Button disabled={isLoading} onClick={onRefresh}>
+				<Button disabled={isLoading} onClick={resetFilters}>
 					<RefreshCw />
 				</Button>
 				<DataTablePagination table={table} />

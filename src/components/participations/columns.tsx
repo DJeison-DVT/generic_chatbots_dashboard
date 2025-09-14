@@ -5,7 +5,6 @@ import { DataTableColumnHeaderSearch } from '../tables/search-menu';
 import { isPhoneFilterFn, isSelectedFilterFn } from './filters';
 import MessageHistory from './components/MessageHistory';
 import { Minus, Plus } from 'lucide-react';
-import TypeDataTableColumnHeaderCheckbox from '../tables/type-checkbox-menu';
 
 interface expandButtonProps {
 	children?: React.ReactNode;
@@ -90,7 +89,7 @@ export const columns: ColumnDef<Participation>[] = [
 	},
 	{
 		accessorKey: 'user.phone',
-		id: 'user.phone',
+		id: 'phone',
 		header: ({ column }) => (
 			<DataTableColumnHeaderSearch column={column} title="Celular" />
 		),
@@ -115,9 +114,11 @@ export const columns: ColumnDef<Participation>[] = [
 		accessorKey: 'prize_type',
 		id: 'prize_type',
 		header: ({ column }) => (
-			<TypeDataTableColumnHeaderCheckbox
+			<DocumentsDataTableColumnHeaderCheckbox
 				column={column}
 				title="Tipo"
+				id="prize_type"
+				defaultOptions={['physical', 'digital']}
 				options={['physical', 'digital']}
 				displayOptions={StatusDisplayOptions}
 			/>
@@ -144,6 +145,8 @@ export const columns: ColumnDef<Participation>[] = [
 					'approved',
 					'fullfiled',
 				]}
+				id="status"
+				defaultOptions={['documents', 'complete']}
 				displayOptions={StatusDisplayOptions}
 			/>
 		),

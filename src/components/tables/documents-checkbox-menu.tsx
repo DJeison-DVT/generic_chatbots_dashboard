@@ -17,7 +17,9 @@ interface DataTableColumnHeaderProps<TData, TValue> {
 	title: string;
 	className?: string;
 	options: string[];
-	displayOptions?: { [key: string]: string };
+	id: string;
+	defaultOptions: string[];
+	displayOptions: { [key: string]: string };
 }
 
 export default function DocumentsDataTableColumnHeaderCheckbox<TData, TValue>({
@@ -25,17 +27,18 @@ export default function DocumentsDataTableColumnHeaderCheckbox<TData, TValue>({
 	title,
 	className,
 	options,
+	id,
+	defaultOptions,
 	displayOptions,
 }: DataTableColumnHeaderProps<TData, TValue>) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchParams] = useSearchParams();
-	const navigate = useNavigate();
 
 	if (!column.getCanFilter()) {
 		return <div className={cn(className)}>{title}</div>;
 	}
 	const [selectedOptions, setSelectedOptions] = useState(
-		searchParams.get('status')?.split(',') || ['documents', 'complete'],
+		searchParams.get(id)?.split(',') || defaultOptions,
 	);
 
 	const handleOptionChange = (checked: boolean, id: string) => {
@@ -48,14 +51,6 @@ export default function DocumentsDataTableColumnHeaderCheckbox<TData, TValue>({
 
 	useEffect(() => {
 		column.setFilterValue(selectedOptions);
-		const params = new URLSearchParams(searchParams.toString());
-
-		if (JSON.stringify(selectedOptions) === JSON.stringify(['complete', 'documents'])) {
-			params.delete('status');
-		} else {
-			params.set('status', selectedOptions.join(','));
-		}
-		navigate({ search: params.toString() }, { replace: true });
 	}, [selectedOptions, column]);
 
 	return (
