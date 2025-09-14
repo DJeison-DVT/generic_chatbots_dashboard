@@ -68,7 +68,6 @@ export function DataTable<TData, TValue>({
 		getExpandedRowModel: getExpandedRowModel(),
 		initialState: {
 			pagination: {
-				pageSize: Number(searchParams.get('pageSize')) || 10,
 				pageIndex: Number(searchParams.get('page')) - 1 || 0,
 			},
 		},
@@ -83,19 +82,13 @@ export function DataTable<TData, TValue>({
 
 	useEffect(() => {
 		const params = new URLSearchParams(searchParams.toString());
-		const { pageIndex, pageSize } = table.getState().pagination;
+		const { pageIndex } = table.getState().pagination;
 
 		// Handle pagination parameters
 		if (pageIndex === 0) {
 			params.delete('page');
 		} else {
 			params.set('page', String(pageIndex + 1));
-		}
-
-		if (pageSize === 10) {
-			params.delete('pageSize');
-		} else {
-			params.set('pageSize', String(pageSize));
 		}
 
 		// Handle column filters
