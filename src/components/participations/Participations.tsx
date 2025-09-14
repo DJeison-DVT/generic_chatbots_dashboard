@@ -11,16 +11,27 @@ import { authorizedFetch } from '../../auth';
 import { toast } from '../ui/use-toast';
 import { Button } from '../ui/button';
 import FullImage from '../ui/full-image';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Participations() {
 	const [participations, setParticipations] = useState<Participation[]>([]);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [searchParams] = useSearchParams();
+	const pageSize = 10;
 
 	const fetchParticipations = async () => {
 		setIsLoading(true);
 		try {
+			const params = searchParams.toString();
+			if (!params) return;
+
 			const response = await authorizedFetch(
-				settings.apiUrl + settings.participationsURL,
+				settings.apiUrl +
+					settings.participationsURL +
+					'?limit=' +
+					pageSize +
+					'&' +
+					params,
 			);
 			const data = await response.json();
 
@@ -66,6 +77,10 @@ export default function Participations() {
 		}
 		setIsLoading(false);
 	};
+
+	useEffect(() => {
+		fetchParticipations();
+	}, [searchParams]);
 
 	const ticketColumn: ColumnDef<Participation> = {
 		header: 'Ticket',
@@ -164,10 +179,6 @@ export default function Participations() {
 			console.error('Error rechazando la documentacion: ', error);
 		}
 	};
-
-	useEffect(() => {
-		fetchParticipations();
-	}, []);
 
 	const renderSubComponent = ({ row }: { row: Row<Participation> }) => {
 		const participation = row.original;
@@ -307,7 +318,6 @@ export default function Participations() {
 				columns={columns}
 				data={participations}
 				isLoading={isLoading}
-				onRefresh={fetchParticipations}
 				getRowCanExpand={() => true}
 				renderSubComponent={renderSubComponent}
 			/>
