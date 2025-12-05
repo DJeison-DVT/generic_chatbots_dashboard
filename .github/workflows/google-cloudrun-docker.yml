@@ -8,7 +8,7 @@ env:
   PROJECT_ID: kleenex-promo
   GAR_NAME: scj-este-verano-dash
   GAR_LOCATION: northamerica-south1
-  SERVICE: scj-este-verano-dash
+  SERVICE: jumex-hydrolit-dash
   REGION: northamerica-south1
 
 jobs:
