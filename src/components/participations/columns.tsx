@@ -28,10 +28,10 @@ const StatusDisplayOptions: Record<Status, string> = {
 	documents: 'Documentos',
 };
 
-const prizeTypeDisplayOptions: Record<string, string> = {
-	physical: 'Físico',
-	digital: 'Digital',
-};
+// const prizeTypeDisplayOptions: Record<string, string> = {
+// 	physical: 'Físico',
+// 	digital: 'Digital',
+// };
 
 export const columns: ColumnDef<Participation>[] = [
 	{
@@ -110,24 +110,24 @@ export const columns: ColumnDef<Participation>[] = [
 			return prize ? prize : null;
 		},
 	},
-	{
-		accessorKey: 'prize_type',
-		id: 'prize_type',
-		header: ({ column }) => (
-			<DocumentsDataTableColumnHeaderCheckbox
-				column={column}
-				title="Tipo"
-				id="prize_type"
-				options={['physical', 'digital']}
-				displayOptions={StatusDisplayOptions}
-			/>
-		),
-		filterFn: isSelectedFilterFn,
-		cell: ({ row }) => {
-			const prizeType = row.getValue<string>('prize_type');
-			return prizeType ? prizeTypeDisplayOptions[prizeType] : null;
-		},
-	},
+	// {
+	// 	accessorKey: 'prize_type',
+	// 	id: 'prize_type',
+	// 	header: ({ column }) => (
+	// 		<DocumentsDataTableColumnHeaderCheckbox
+	// 			column={column}
+	// 			title="Tipo"
+	// 			id="prize_type"
+	// 			options={['physical', 'digital']}
+	// 			displayOptions={StatusDisplayOptions}
+	// 		/>
+	// 	),
+	// 	filterFn: isSelectedFilterFn,
+	// 	cell: ({ row }) => {
+	// 		const prizeType = row.getValue<string>('prize_type');
+	// 		return prizeType ? prizeTypeDisplayOptions[prizeType] : null;
+	// 	},
+	// },
 	{
 		accessorKey: 'status',
 		id: 'status',
