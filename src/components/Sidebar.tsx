@@ -1,5 +1,5 @@
 import { NavLink, useFetcher, useRouteLoaderData } from 'react-router-dom';
-import { Gauge, ShoppingCart, LogOut, Contact } from 'lucide-react';
+import { Gauge, ShoppingCart, LogOut, Contact, Award } from 'lucide-react';
 import { Button } from './ui/button';
 import React from 'react';
 
@@ -76,10 +76,10 @@ export default function Sidebar() {
 								<ShoppingCart />
 								Participaciones
 							</NavigationTab>
-							{/* <NavigationTab to="/dashboard/prizes">
+							<NavigationTab to="/dashboard/prizes">
 								<Award />
 								Premios
-							</NavigationTab> */}
+							</NavigationTab>
 							{role === 'admin' && (
 								<NavigationTab to="/dashboard/users">
 									<Contact />

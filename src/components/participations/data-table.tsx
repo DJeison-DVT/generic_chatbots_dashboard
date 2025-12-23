@@ -142,7 +142,7 @@ export function DataTable<TData, TValue>({
 		// Handle array filters
 		const arrayFilters = [
 			{ id: 'status', param: 'status' },
-			{ id: 'prize_type', param: 'prize_type' },
+			// { id: 'prize_type', param: 'prize_type' },
 		];
 
 		arrayFilters.forEach(({ id, param }) => {
@@ -233,7 +233,8 @@ export function DataTable<TData, TValue>({
 					disabled={isLoading}
 					onClick={() =>
 						(window.location.href =
-							'/dashboard/participations?status=complete%2Cdocuments&prize_type=digital%2Cphysical')
+							// '/dashboard/participations?status=complete%2Cdocuments&prize_type=digital%2Cphysical')
+							'/dashboard/participations?status=complete')
 					}
 				>
 					<RefreshCw />
