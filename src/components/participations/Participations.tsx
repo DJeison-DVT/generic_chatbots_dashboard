@@ -1,124 +1,27 @@
-import { useEffect, useState } from 'react';
-
-import { User } from '../../Types/User';
+// src/components/participations/Participations.tsx
+import React, { useState } from 'react';
 import { Participation } from '../../Types/Participation';
 import { columns as originalColumns } from './columns';
 import { DataTable } from './data-table';
-import settings from '../../settings';
 import TicketDialog from './components/TicketDialog';
 import { ColumnDef, Row } from '@tanstack/react-table';
-import { authorizedFetch } from '../../auth';
 import { toast } from '../ui/use-toast';
 import { Button } from '../ui/button';
 import FullImage from '../ui/full-image';
 import { useSearchParams } from 'react-router-dom';
+import { useParticipations } from '../../hooks/useParticipations';
+import settings from '../../settings';
 
 export default function Participations() {
-	const [participations, setParticipations] = useState<Participation[]>([]);
-	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [searchParams] = useSearchParams();
-	const pageSize = 10;
-	const [pageCount, setPageCount] = useState(0);
-
-	const fetchParticipations = async () => {
-		setParticipations([]);
-		setIsLoading(true);
-		try {
-			const params = searchParams.toString();
-			if (!params) {
-				setIsLoading(false);
-				return;
-			}
-
-			const adjustedParams = (() => {
-				const urlParams = new URLSearchParams(params);
-				const newParams = new URLSearchParams();
-
-				// Copy all parameters first
-				urlParams.forEach((value, key) => {
-					// Handle array parameters that might be comma-separated
-					if (key === 'status' || key === 'prize_type') {
-						// Split comma-separated values and add as multiple params
-						const values = value.split(',').filter((v) => v.trim());
-						values.forEach((v) => {
-							if (v.trim()) {
-								newParams.append(key, v.trim());
-							}
-						});
-					} else {
-						// Keep other parameters as-is
-						newParams.set(key, value);
-					}
-				});
-
-				return newParams.toString();
-			})();
-
-			const response = await authorizedFetch(
-				settings.apiUrl +
-					settings.participationsURL +
-					'?limit=' +
-					pageSize +
-					'&' +
-					adjustedParams,
-			);
-
-			// Handle 404 specifically - no participations found
-			if (response.status === 404) {
-				setIsLoading(false);
-				return;
-			}
-
-			const data = await response.json();
-			const participationsData = data.participations;
-			setPageCount(Math.ceil(data.count / pageSize));
-
-			const transformedData = participationsData.map((item: any) => {
-				const participationId = item._id;
-				const userId = item.user._id;
-
-				let userObject: User = {
-					id: userId,
-					phone: item.user.phone,
-					terms: item.user.terms,
-					name: item.user.name,
-					email: item.user.email,
-					address: item.user.address || '',
-					complete: item.user.complete,
-					documented: item.user.documentation_validated,
-					ine_front_url: item.user.ine_front_url || '',
-					ine_back_url: item.user.ine_back_url || '',
-					physical_terms: item.user.physical_terms || false,
-					date_of_birth: item.user.date_of_birth || '',
-				};
-
-				const result: Participation = {
-					id: participationId,
-					user: userObject,
-					ticketUrl: item.ticket_url,
-					ticketAttempts: item.ticket_attempts,
-					datetime: new Date(item.datetime + 'Z'),
-					priority_number: String(item.priority_number),
-					status: item.status,
-					flow: item.flow,
-					prize: item.prize,
-					prize_type: item.prize_type,
-					serial_number: item.serial_number,
-				};
-
-				return result;
-			});
-
-			setParticipations(transformedData);
-		} catch (error) {
-			console.error('Error fetching participations: ', error);
-		}
-		setIsLoading(false);
-	};
-
-	useEffect(() => {
-		fetchParticipations();
-	}, [searchParams]);
+	const {
+		participations,
+		isLoading,
+		pageCount,
+		fetchParticipations,
+		acceptDocuments,
+		rejectDocuments,
+	} = useParticipations(searchParams);
 
 	const ticketColumn: ColumnDef<Participation> = {
 		header: 'Ticket',
@@ -135,9 +38,9 @@ export default function Participations() {
 	};
 
 	const columns = [
-		...originalColumns.slice(0, 3), // Get the first 4 columns
-		ticketColumn, // Insert the new column
-		...originalColumns.slice(3), // Append the rest of the columns
+		...originalColumns.slice(0, 3),
+		ticketColumn,
+		...originalColumns.slice(3),
 	];
 
 	const [documentationChecks, setDocumentationChecks] = useState({
@@ -145,7 +48,7 @@ export default function Participations() {
 		ine_back: false,
 	});
 
-	const handleCheckboxChange = (event: any) => {
+	const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, checked } = event.target;
 		setDocumentationChecks((prevState) => ({
 			...prevState,
@@ -153,149 +56,85 @@ export default function Participations() {
 		}));
 	};
 
-	const onDocumentationConfirm = async (participation: Participation) => {
+	const handleDocumentationConfirm = async (participation: Participation) => {
 		if (!documentationChecks.ine_front || !documentationChecks.ine_back) {
-			toast({
-				title: 'Favor de confirmar todos los documentos',
-			});
+			toast({ title: 'Favor de confirmar todos los documentos' });
 			return;
 		}
-
-		try {
-			const url = `${settings.apiUrl}api/dashboard/accept-documents`;
-			const response = await authorizedFetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					ticket_id: participation.id,
-				}),
-			});
-			if (!response.ok) {
-				const body = await response.json();
-				toast({
-					title: body.detail || 'Error al aceptar ticket',
-					description: response.status,
-				});
-			} else {
-				toast({
-					title: 'Ticket aceptado',
-				});
-				await fetchParticipations();
-			}
-		} catch (error) {
-			console.error('Error aceptando la documentacion: ', error);
-		}
-	};
-
-	const onDocumentationReject = async (participation: Participation) => {
-		try {
-			const url = `${settings.apiUrl}api/dashboard/reject-documents`;
-			const response = await authorizedFetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					ticket_id: participation.id,
-				}),
-			});
-			if (!response.ok) {
-				const body = await response.json();
-				toast({
-					title: body.detail || 'Error al rechazar ticket',
-					description: response.status,
-				});
-			} else {
-				toast({
-					title: 'Ticket rechazado',
-				});
-				await fetchParticipations();
-			}
-		} catch (error) {
-			console.error('Error rechazando la documentacion: ', error);
-		}
+		await acceptDocuments(participation);
 	};
 
 	const renderSubComponent = ({ row }: { row: Row<Participation> }) => {
 		const participation = row.original;
 		const user = participation.user;
 
-		const name = user.name;
-		const email = user.email;
-		const address = user.address;
-		const prize = participation.prize;
-		const priority_number = participation.priority_number;
-
-		const ine_front_url = user.ine_front_url;
-		const ine_back_url = user.ine_back_url;
-		const physical_terms = user.physical_terms;
-		const date_of_birth = user.date_of_birth;
-		const documented = user.documented;
-
 		return (
 			<div>
 				<p>
-					<strong>Nombre:</strong> {name}
+					<strong>Nombre:</strong> {user.name}
 				</p>
 				<p>
 					<strong>Premio:</strong>{' '}
-					{!isNaN(Number(prize)) ? `Cupon de ${prize}` : prize}
+					{!isNaN(Number(participation.prize))
+						? `Cupon de ${participation.prize}`
+						: participation.prize}
 				</p>
 				<p>
-					<strong>Numero de participacion:</strong> {priority_number}
+					<strong>Numero de participacion:</strong> {participation.priority_number}
 				</p>
 				<p>
-					<strong>Email:</strong> {email}
+					<strong>Email:</strong> {user.email}
 				</p>
 				<p>
-					<strong>Fecha de nacimiento:</strong> {date_of_birth}
+					<strong>Fecha de nacimiento:</strong> {user.date_of_birth}
 				</p>
-				{physical_terms ? (
+				{user.physical_terms ? (
 					<p className="text-green-500">Terminos fisicos aceptados</p>
 				) : (
 					<p className="text-red-500">Terminos fisicos no han sido aceptados</p>
 				)}
-				{address && (
+				{user.address && (
 					<p>
-						<strong>Dirección:</strong> {address}
+						<strong>Dirección:</strong> {user.address}
 					</p>
 				)}
-				{documented ? (
+				{user.documented ? (
 					<p className="text-green-500">Documentado</p>
 				) : (
 					<p className="text-red-500">No documentado</p>
 				)}
 				<div className="flex p-4 gap-4">
-					{ine_front_url && (
+					{user.ine_front_url && (
 						<div className="flex flex-col justify-center items-center">
 							<p className="text-center font-bold">INE Frontal</p>
 							<FullImage
-								src={settings.bucketURL + ine_front_url}
+								src={settings.bucketURL + user.ine_front_url}
 								alt="INE Front"
 							>
 								<img
-									src={settings.bucketURL + ine_front_url}
+									src={settings.bucketURL + user.ine_front_url}
 									alt="INE Front"
 									className="h-80 w-auto object-contain"
 								/>
 							</FullImage>
 						</div>
 					)}
-					{ine_back_url && (
+					{user.ine_back_url && (
 						<div className="flex flex-col justify-center items-center">
 							<p className="text-center font-bold">INE Posterior</p>
-							<FullImage src={settings.bucketURL + ine_back_url} alt="INE Back">
+							<FullImage
+								src={settings.bucketURL + user.ine_back_url}
+								alt="INE Back"
+							>
 								<img
-									src={settings.bucketURL + ine_back_url}
+									src={settings.bucketURL + user.ine_back_url}
 									alt="INE Back"
 									className="h-80 w-auto object-contain"
 								/>
 							</FullImage>
 						</div>
 					)}
-					{ine_front_url && ine_back_url && !documented && (
+					{user.ine_front_url && user.ine_back_url && !user.documented && (
 						<div>
 							<form className="flex flex-col gap-2">
 								<div>Confirmar documentacion:</div>
@@ -326,7 +165,7 @@ export default function Participations() {
 								<div className="flex gap-2">
 									<Button
 										type="button"
-										onClick={() => onDocumentationConfirm(participation)}
+										onClick={() => handleDocumentationConfirm(participation)}
 										disabled={
 											!documentationChecks.ine_front ||
 											!documentationChecks.ine_back
@@ -336,7 +175,7 @@ export default function Participations() {
 									</Button>
 									<Button
 										type="button"
-										onClick={() => onDocumentationReject(participation)}
+										onClick={() => rejectDocuments(participation)}
 										variant="destructive"
 									>
 										Rechazar
