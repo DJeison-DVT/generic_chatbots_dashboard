@@ -21,10 +21,8 @@ import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group';
 import { CirclePlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import settings from '../../settings';
-import { useToast } from '../ui/use-toast';
 import { useState } from 'react';
-import { authorizedFetch } from '../../auth';
+import { useCreateUser } from '../../hooks/useCreateUser';
 
 const formSchema = z.object({
 	username: z.string().min(2, {
@@ -38,15 +36,12 @@ const formSchema = z.object({
 
 interface UserCreationDialogProps {
 	onUserCreation: () => Promise<void>;
-	isLoading: boolean;
 }
 
 export default function UserCreationDialog({
 	onUserCreation,
-	isLoading,
 }: UserCreationDialogProps) {
 	const [isOpen, setIsOpen] = useState(false);
-	const { toast } = useToast();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -57,32 +52,14 @@ export default function UserCreationDialog({
 		},
 	});
 
+	const { createUser, isLoading } = useCreateUser(async () => {
+		setIsOpen(false);
+		await onUserCreation();
+		form.reset();
+	});
+
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		try {
-			const url = `${settings.apiUrl}/api/auth/register`;
-			const response = await authorizedFetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(values),
-			});
-			if (!response.ok) {
-				toast({
-					title: 'Error al crear Usuario',
-					description: response.status,
-				});
-			} else {
-				toast({
-					title: 'Usuario creado',
-				});
-				setIsOpen(false);
-				await onUserCreation();
-				form.reset();
-			}
-		} catch (error) {
-			console.error('Error creating user:', error);
-		}
+		await createUser(values);
 	}
 
 	return (
