@@ -11,7 +11,7 @@ export function useTicket(
 	onRefresh: () => Promise<void>,
 ) {
 	const [disabled, setDisabled] = useState(
-		participation.serial_number !== null,
+		participation.participation_data.serial_number !== null,
 	);
 
 	const rejectTicket = async (reason: string) => {
@@ -58,7 +58,10 @@ export function useTicket(
 					return false;
 				}
 				const body = await response.json();
-				handleApiError(body.detail || 'Error al aceptar ticket', response.status);
+				handleApiError(
+					body.detail || 'Error al aceptar ticket',
+					response.status,
+				);
 			} else {
 				toast({ title: 'Ticket aceptado' });
 				await onRefresh();

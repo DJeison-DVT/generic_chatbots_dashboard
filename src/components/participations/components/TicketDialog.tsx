@@ -62,7 +62,8 @@ export default function TicketDialog({
 	const form = useForm<z.infer<typeof ticketNumberSchema>>({
 		resolver: zodResolver(ticketNumberSchema),
 		defaultValues: {
-			ticketNumber: participation.serial_number || '',
+			// ticketNumber: participation.serial_number || '',
+			ticketNumber: participation.participation_data.serial_number || '',
 		},
 	});
 
@@ -100,13 +101,13 @@ export default function TicketDialog({
 					<div className="flex h-80">
 						<div className="min-w-[500px]">
 							<FullImage
-								src={`${settings.bucketURL + participation.ticketUrl}`}
+								src={`${settings.bucketURL + participation.participation_data.ticket_url}`}
 								alt="ticket"
 								setParentField={setFormTicketNumber}
 							>
 								<img
 									className="max-h-[600px]"
-									src={`${settings.bucketURL + participation.ticketUrl}`}
+									src={`${settings.bucketURL + participation.participation_data.ticket_url}`}
 								/>
 							</FullImage>
 						</div>
@@ -120,7 +121,7 @@ export default function TicketDialog({
 										control={form.control}
 										name="ticketNumber"
 										// eslint-disable-next-line @typescript-eslint/no-explicit-any
-									render={({ field }: { field: any }) => (
+										render={({ field }: { field: any }) => (
 											<FormItem className="col-span-2 h-fit">
 												<FormControl>
 													<Input
@@ -167,10 +168,7 @@ export default function TicketDialog({
 										<AlertDialogHeader>
 											<AlertDialogTitle>Motivo de Rechazo</AlertDialogTitle>
 											<AlertDialogDescription>
-												<Select
-													onValueChange={setReason}
-													defaultValue={reason}
-												>
+												<Select onValueChange={setReason} defaultValue={reason}>
 													<SelectTrigger className="w-[180px]">
 														<SelectValue placeholder="Motivo" />
 													</SelectTrigger>

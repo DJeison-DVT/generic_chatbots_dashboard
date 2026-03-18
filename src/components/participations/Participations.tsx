@@ -28,7 +28,7 @@ export default function Participations() {
 		accessorKey: 'id',
 		cell: ({ row }) => {
 			const participation = row.original;
-			return participation.ticketUrl ? (
+			return participation.participation_data.ticket_url ? (
 				<TicketDialog
 					participation={participation}
 					onTicketSend={fetchParticipations}
@@ -73,7 +73,7 @@ export default function Participations() {
 				<p>
 					<strong>Nombre:</strong> {user.name}
 				</p>
-				<p>
+				{/* <p>
 					<strong>Premio:</strong>{' '}
 					{!isNaN(Number(participation.prize))
 						? `Cupon de ${participation.prize}`
@@ -81,7 +81,7 @@ export default function Participations() {
 				</p>
 				<p>
 					<strong>Numero de participacion:</strong> {participation.priority_number}
-				</p>
+				</p> */}
 				<p>
 					<strong>Email:</strong> {user.email}
 				</p>

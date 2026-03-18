@@ -1,5 +1,5 @@
 import { NavLink, useFetcher, useRouteLoaderData } from 'react-router-dom';
-import { Gauge, ShoppingCart, LogOut, Contact, Award } from 'lucide-react';
+import { Gauge, ShoppingCart, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import React from 'react';
 
