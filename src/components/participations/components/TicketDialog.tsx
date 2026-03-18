@@ -1,8 +1,8 @@
+// src/components/participations/components/TicketDialog.tsx
 import { useState } from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-
 import {
 	Dialog,
 	DialogContent,
@@ -38,12 +38,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../../ui/select';
-import { useToast } from '../../ui/use-toast';
-
 import settings from '../../../settings';
 import { Participation } from '../../../Types/Participation';
-import { authorizedFetch } from '../../../auth';
 import FullImage from '../../ui/full-image';
+import { useTicket } from '../../../hooks/useTicket';
 
 const ticketNumberSchema = z.object({
 	ticketNumber: z.string(),
@@ -60,10 +58,6 @@ export default function TicketDialog({
 }: TicketDialogProps) {
 	const [reason, setReason] = useState<string>('');
 	const [isOpen, setIsOpen] = useState(false);
-	const [disabled, setDisabled] = useState<boolean>(
-		participation.serial_number !== null,
-	);
-	const { toast } = useToast();
 
 	const form = useForm<z.infer<typeof ticketNumberSchema>>({
 		resolver: zodResolver(ticketNumberSchema),
@@ -72,78 +66,25 @@ export default function TicketDialog({
 		},
 	});
 
+	const { submitTicket, rejectTicket, disabled } = useTicket(
+		participation,
+		async () => {
+			await onTicketSend();
+			setIsOpen(false);
+		},
+	);
+
 	const setFormTicketNumber = (ticketNumber: string) => {
 		form.setValue('ticketNumber', ticketNumber);
-	}
-
-	const handleReject = async () => {
-		setDisabled(true);
-		try {
-			const url = `${settings.apiUrl}api/dashboard/reject`;
-			const response = await authorizedFetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					ticket_id: participation.id,
-					rejection_reason: reason,
-				}),
-			});
-			if (!response.ok) {
-				toast({
-					title: 'Error al rechazar ticket',
-					description: response.status,
-				});
-			} else {
-				toast({
-					title: 'Ticket rechazado',
-				});
-				await onTicketSend();
-				setIsOpen(false);
-			}
-		} catch (error) {
-			console.error('Error rejecting ticket: ', error);
-		}
-		setDisabled(false);
 	};
 
 	const onSubmit = async (values: z.infer<typeof ticketNumberSchema>) => {
-		setDisabled(true);
-		try {
-			const url = `${settings.apiUrl}api/dashboard/accept`;
-			const response = await authorizedFetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					ticket_id: participation.id,
-					serial_number: values.ticketNumber,
-				}),
-			});
-			if (!response.ok) {
-				if (response.status == 409) {
-					setReason('Folio Repetido');
-					await handleReject();
-				}
-				const body = await response.json();
-				toast({
-					title: body.detail || 'Error al aceptar ticket',
-					description: response.status,
-				});
-			} else {
-				toast({
-					title: 'Ticket aceptado',
-				});
-				await onTicketSend();
-				setIsOpen(false);
-				form.reset();
-			}
-		} catch (error) {
-			console.error('Error accepting ticket: ', error);
-		}
-		setDisabled(false);
+		const success = await submitTicket(values.ticketNumber);
+		if (success) form.reset();
+	};
+
+	const handleReject = async () => {
+		await rejectTicket(reason);
 	};
 
 	return (
@@ -158,7 +99,11 @@ export default function TicketDialog({
 				<DialogDescription asChild>
 					<div className="flex h-80">
 						<div className="min-w-[500px]">
-							<FullImage src={`${settings.bucketURL + participation.ticketUrl}`} alt="ticket" setParentField={setFormTicketNumber}>
+							<FullImage
+								src={`${settings.bucketURL + participation.ticketUrl}`}
+								alt="ticket"
+								setParentField={setFormTicketNumber}
+							>
 								<img
 									className="max-h-[600px]"
 									src={`${settings.bucketURL + participation.ticketUrl}`}
@@ -174,7 +119,8 @@ export default function TicketDialog({
 									<FormField
 										control={form.control}
 										name="ticketNumber"
-										render={({ field }: { field: any }) => (
+										// eslint-disable-next-line @typescript-eslint/no-explicit-any
+									render={({ field }: { field: any }) => (
 											<FormItem className="col-span-2 h-fit">
 												<FormControl>
 													<Input
@@ -221,7 +167,10 @@ export default function TicketDialog({
 										<AlertDialogHeader>
 											<AlertDialogTitle>Motivo de Rechazo</AlertDialogTitle>
 											<AlertDialogDescription>
-												<Select onValueChange={setReason} defaultValue={reason}>
+												<Select
+													onValueChange={setReason}
+													defaultValue={reason}
+												>
 													<SelectTrigger className="w-[180px]">
 														<SelectValue placeholder="Motivo" />
 													</SelectTrigger>
