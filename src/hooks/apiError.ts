@@ -1,10 +1,6 @@
 import { toast } from '../components/ui/use-toast';
 
-export function handleApiError(
-	_response: Response,
-	title: string,
-	description?: string | number,
-): void {
+export function handleApiError(title: string, description?: string | number): void {
 	toast({ title, description });
 }
 
