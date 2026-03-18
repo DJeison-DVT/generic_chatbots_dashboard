@@ -23,7 +23,7 @@ export const authProvider: AuthProvider = {
 	role: null,
 
 	async signin(username, password) {
-		const response = await fetch(`${settings.apiUrl}/api/auth/token`, {
+		const response = await fetch(`${settings.apiUrl}/dashboard/token`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',

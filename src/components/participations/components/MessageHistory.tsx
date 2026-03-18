@@ -60,11 +60,11 @@ export default function MessageHistory({ participation }: MessageHistoryProps) {
 												message: message.text || '',
 												sentTime: new Date(message.datetime).toLocaleString(),
 												sender:
-													message.from_ === participation.user.phone
-														? participation.user.phone
+													message.from_ === phone
+														? phone
 														: 'system',
 												direction:
-													message.from_ === participation.user.phone
+													message.from_ === phone
 														? 'incoming'
 														: 'outgoing',
 												position: 'single',
@@ -72,7 +72,7 @@ export default function MessageHistory({ participation }: MessageHistoryProps) {
 										>
 											<Message.Header
 												sender={
-													message.from_ === participation.user.phone
+													message.from_ === phone
 														? participation.user.name
 														: ''
 												}

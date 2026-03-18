@@ -19,13 +19,11 @@ const ExpandButton = ({ children }: expandButtonProps) => {
 };
 
 const StatusDisplayOptions: Record<Status, string> = {
-	complete: 'Completo',
-	pending: 'Pendiente',
-	incomplete: 'Incompleto',
-	rejected: 'Rechazado',
+	in_progress: 'En progreso',
+	pending_review: 'Pendiente de revisión',
 	approved: 'Aprobado',
-	fullfiled: 'Entregado',
-	documents: 'Documentos',
+	rejected: 'Rechazado',
+	completed: 'Completado',
 };
 
 // const prizeTypeDisplayOptions: Record<string, string> = {
@@ -60,22 +58,21 @@ export const columns: ColumnDef<Participation>[] = [
 			);
 		},
 	},
+	// {
+	// 	accessorKey: 'current_step',
+	// 	id: 'current_step',
+	// 	header: ({ column }) => (
+	// 		<DataTableColumnHeaderSearch column={column} title="Paso" />
+	// 	),
+	// 	cell: ({ row }) => {
+	// 		return <div>{row.getValue<string>('current_step')}</div>;
+	// 	},
+	// },
 	{
-		accessorKey: 'priority_number',
-		id: 'priority_number',
-		header: ({ column }) => (
-			<DataTableColumnHeaderSearch column={column} title="Num" />
-		),
-		cell: ({ row }) => {
-			const priority_number = row.getValue<number>('priority_number');
-			return <div>{priority_number > 0 ? priority_number : ''}</div>;
-		},
-	},
-	{
-		accessorKey: 'datetime',
+		accessorKey: 'created_at',
 		header: 'Fecha',
 		cell: ({ row }) => {
-			let date = row.getValue('datetime');
+			let date = row.getValue('created_at');
 			if (!(date instanceof Date)) {
 				return null;
 			}
@@ -88,10 +85,10 @@ export const columns: ColumnDef<Participation>[] = [
 		},
 	},
 	{
-		accessorKey: 'user.phone',
-		id: 'phone',
+		accessorKey: 'user_id',
+		id: 'user_id',
 		header: ({ column }) => (
-			<DataTableColumnHeaderSearch column={column} title="Celular" />
+			<DataTableColumnHeaderSearch column={column} title="Usuario" />
 		),
 		filterFn: isPhoneFilterFn,
 		cell: ({ row }) => {
@@ -99,15 +96,6 @@ export const columns: ColumnDef<Participation>[] = [
 			return participation ? (
 				<MessageHistory participation={participation} />
 			) : null;
-		},
-	},
-	{
-		accessorKey: 'prize',
-		header: 'Premio',
-		cell: ({ row }) => {
-			var prize = row.getValue<string>('prize');
-			prize = prize === 'physical_options' ? 'Físico' : prize;
-			return prize ? prize : null;
 		},
 	},
 	// {
@@ -135,15 +123,7 @@ export const columns: ColumnDef<Participation>[] = [
 			<DocumentsDataTableColumnHeaderCheckbox
 				column={column}
 				title="Estado"
-				options={[
-					'documents',
-					'complete',
-					'pending',
-					'incomplete',
-					'rejected',
-					'approved',
-					'fullfiled',
-				]}
+				options={Object.keys(StatusDisplayOptions) as string[]}
 				id="status"
 				displayOptions={StatusDisplayOptions}
 			/>

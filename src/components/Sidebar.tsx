@@ -52,11 +52,11 @@ export default function Sidebar() {
 	return (
 		<div className="w-fit h-full flex flex-col">
 			<div className="bg-primary w-64 flex justify-center py-2 h-20">
-				<img
+				{/* <img
 					src="/demente-logo.png"
 					alt="demente logo"
 					className="invert w-60"
-				/>
+				/> */}
 			</div>
 			<div className="flex flex-col bg-dark flex-1">
 				<nav className="flex flex-col  text-primary flex-1 *:p-4">
@@ -71,12 +71,11 @@ export default function Sidebar() {
 								<Gauge />
 								Dashboard
 							</NavigationTab>
-							{/* <NavigationTab to="/dashboard/participations?status=complete%2Cdocuments&prize_type=digital%2Cphysical"> */}
-							<NavigationTab to="/dashboard/participations?status=complete">
+							<NavigationTab to="/dashboard/participations?status=pending_review">
 								<ShoppingCart />
 								Participaciones
 							</NavigationTab>
-							<NavigationTab to="/dashboard/prizes">
+							{/* <NavigationTab to="/dashboard/prizes">
 								<Award />
 								Premios
 							</NavigationTab>
@@ -85,7 +84,7 @@ export default function Sidebar() {
 									<Contact />
 									Usuarios
 								</NavigationTab>
-							)}
+							)} */}
 						</>
 					)}
 				</nav>

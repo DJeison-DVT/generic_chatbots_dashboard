@@ -33,7 +33,7 @@ export default function Login() {
 				replace
 				className="flex flex-col bg-dark text-white justify-center p-14 gap-2 w-[500px] h-screen"
 			>
-				<img src="demente-card.png" alt="demente" />
+				{/* <img src="demente-card.png" alt="demente" /> */}
 				<input type="hidden" name="redirectTo" value={from} />
 				<label>
 					Usuario: <Input className="text-black" name="username" />

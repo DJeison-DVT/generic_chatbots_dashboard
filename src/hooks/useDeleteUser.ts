@@ -9,7 +9,7 @@ export function useDeleteUser(onSuccess: () => Promise<void>) {
 	const deleteUser = async (userId: string) => {
 		setIsLoading(true);
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/users`;
+			const url = `${settings.apiUrl}/dashboard/users`;
 			const response = await authorizedFetch(url, {
 				method: 'DELETE',
 				headers: { 'Content-Type': 'application/json' },

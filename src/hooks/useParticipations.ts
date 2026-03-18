@@ -1,6 +1,6 @@
 // src/hooks/useParticipations.ts
 import { useState, useEffect, useCallback } from 'react';
-import { Participation } from '../Types/Participation';
+import { Participation, ParticipationData } from '../Types/Participation';
 import { User } from '../Types/User';
 import settings from '../settings';
 import { authorizedFetch } from '../auth';
@@ -10,29 +10,30 @@ import { toast } from '../components/ui/use-toast';
 const PAGE_SIZE = 10;
 
 interface RawParticipationItem {
-	_id: string;
-	ticket_url: string;
-	ticket_attempts: number;
-	datetime: string;
-	priority_number: number | string;
+	id: string;
+	user_id: string;
+	created_at: string;
+	updated_at: string;
+	current_step: string;
+	flow_name: string;
 	status: string;
-	flow: string;
-	prize: string;
-	prize_type: string;
-	serial_number: string;
+	participation_data: {
+		ticket_url: string | null;
+		rejection_reason: string | null;
+		ticket_attempts: number | null;
+		serial_number: string | null;
+		amount_total: number | null;
+		cluster_id: string | null;
+		document_id: string | null;
+		duplicate_count: number | null;
+		sha256_hash: string | null;
+		store_name: string | null;
+	};
 	user: {
-		_id: string;
-		phone: string;
-		terms: boolean;
-		name: string;
-		email: string;
-		address?: string;
-		complete: boolean;
-		documentation_validated: boolean;
-		ine_front_url?: string;
-		ine_back_url?: string;
-		physical_terms?: boolean;
-		date_of_birth?: string;
+		id: string;
+		number: string;
+		provider: string;
+		name?: string;
 	};
 }
 
@@ -64,7 +65,7 @@ export function useParticipations(searchParams: URLSearchParams) {
 			});
 
 			const response = await authorizedFetch(
-				`${settings.apiUrl}${settings.participationsURL}?limit=${PAGE_SIZE}&${adjustedParams.toString()}`,
+				`${settings.apiUrl}/dashboard/participations?limit=${PAGE_SIZE}&${adjustedParams.toString()}`,
 			);
 
 			if (response.status === 404) {
@@ -74,38 +75,51 @@ export function useParticipations(searchParams: URLSearchParams) {
 			const data = await response.json();
 			setPageCount(Math.ceil(data.count / PAGE_SIZE));
 
-			const transformedData = data.participations.map((item: RawParticipationItem) => {
-				const userObject: User = {
-					id: item.user._id,
-					phone: item.user.phone,
-					terms: item.user.terms,
-					name: item.user.name,
-					email: item.user.email,
-					address: item.user.address || '',
-					complete: item.user.complete,
-					documented: item.user.documentation_validated,
-					ine_front_url: item.user.ine_front_url || '',
-					ine_back_url: item.user.ine_back_url || '',
-					physical_terms: item.user.physical_terms || false,
-					date_of_birth: item.user.date_of_birth || '',
-				};
+			const transformedData = data.participations.map(
+				(item: RawParticipationItem) => {
+					const participationData: ParticipationData = {
+						ticket_url: item.participation_data.ticket_url,
+						rejection_reason: item.participation_data.rejection_reason,
+						ticket_attempts: item.participation_data.ticket_attempts,
+						serial_number: item.participation_data.serial_number,
+						amount_total: item.participation_data.amount_total,
+						cluster_id: item.participation_data.cluster_id,
+						document_id: item.participation_data.document_id,
+						duplicate_count: item.participation_data.duplicate_count,
+						sha256_hash: item.participation_data.sha256_hash,
+						store_name: item.participation_data.store_name,
+					};
 
-				const result: Participation = {
-					id: item._id,
-					user: userObject,
-					ticketUrl: item.ticket_url,
-					ticketAttempts: item.ticket_attempts,
-					datetime: new Date(item.datetime + 'Z'),
-					priority_number: String(item.priority_number),
-					status: item.status,
-					flow: item.flow,
-					prize: item.prize,
-					prize_type: item.prize_type,
-					serial_number: item.serial_number,
-				};
+					const userObject: User = {
+						id: item.user.id,
+						phone: item.user.number,
+						name: item.user.name ?? '',
+						terms: false,
+						physical_terms: false,
+						email: '',
+						address: '',
+						date_of_birth: '',
+						complete: false,
+						documented: false,
+						ine_front_url: '',
+						ine_back_url: '',
+					};
 
-				return result;
-			});
+					const result: Participation = {
+						id: item.id,
+						user_id: item.user_id,
+						user: userObject,
+						created_at: new Date(item.created_at),
+						updated_at: new Date(item.updated_at),
+						current_step: item.current_step,
+						flow_name: item.flow_name,
+						status: item.status,
+						participation_data: participationData,
+					};
+
+					return result;
+				},
+			);
 
 			setParticipations(transformedData);
 		} catch (error) {
@@ -125,7 +139,10 @@ export function useParticipations(searchParams: URLSearchParams) {
 			});
 			if (!response.ok) {
 				const body = await response.json();
-				handleApiError(body.detail || 'Error al aceptar ticket', response.status);
+				handleApiError(
+					body.detail || 'Error al aceptar ticket',
+					response.status,
+				);
 			} else {
 				toast({ title: 'Ticket aceptado' });
 				await fetchParticipations();
@@ -145,7 +162,10 @@ export function useParticipations(searchParams: URLSearchParams) {
 			});
 			if (!response.ok) {
 				const body = await response.json();
-				handleApiError(body.detail || 'Error al rechazar ticket', response.status);
+				handleApiError(
+					body.detail || 'Error al rechazar ticket',
+					response.status,
+				);
 			} else {
 				toast({ title: 'Ticket rechazado' });
 				await fetchParticipations();

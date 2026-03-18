@@ -233,8 +233,7 @@ export function DataTable<TData, TValue>({
 					disabled={isLoading}
 					onClick={() =>
 						(window.location.href =
-							// '/dashboard/participations?status=complete%2Cdocuments&prize_type=digital%2Cphysical')
-							'/dashboard/participations?status=complete')
+							'/dashboard/participations?status=pending_review')
 					}
 				>
 					<RefreshCw />
