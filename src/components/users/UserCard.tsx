@@ -10,12 +10,9 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '../ui/alert-dialog';
-
 import { DashboardUser } from '../../Types/User';
 import { useState } from 'react';
-import settings from '../../settings';
-import { useToast } from '../ui/use-toast';
-import { authorizedFetch } from '../../auth';
+import { useDeleteUser } from '../../hooks/useDeleteUser';
 
 interface UserCard {
 	index: number;
@@ -31,36 +28,11 @@ export default function UserCard({
 	onUserDeletion,
 }: UserCard) {
 	const [isOpen, setIsOpen] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-	const { toast } = useToast();
-	const handleDelete = async () => {
-		setIsLoading(true);
-		try {
-			const url = `${settings.apiUrl}/api/dashboard/users`;
-			const response = await authorizedFetch(url, {
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					user_id: user.id,
-				}),
-			});
+	const { deleteUser, isLoading } = useDeleteUser(async () => {
+		await onUserDeletion();
+		setIsOpen(false);
+	});
 
-			if (!response.ok) {
-				toast({
-					title: 'Error al eliminar el usuario',
-					description: response.status,
-				});
-			} else {
-				await onUserDeletion();
-				setIsOpen(false);
-			}
-		} catch (e) {
-			console.error(e);
-		}
-		setIsLoading(false);
-	};
 	return (
 		<div className="flex w-full justify-between items-center">
 			<div className="px-8 py-4 flex-1" onClick={() => onBodyClick(index)}>
@@ -81,7 +53,10 @@ export default function UserCard({
 						</AlertDialogHeader>
 						<AlertDialogFooter>
 							<AlertDialogCancel>Cancelar</AlertDialogCancel>
-							<AlertDialogAction onClick={handleDelete} disabled={isLoading}>
+							<AlertDialogAction
+								onClick={() => deleteUser(user.id)}
+								disabled={isLoading}
+							>
 								Continuar
 							</AlertDialogAction>
 						</AlertDialogFooter>
