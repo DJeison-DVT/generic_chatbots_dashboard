@@ -1,6 +1,5 @@
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import { LoaderCircle } from 'lucide-react';
-
 import {
 	Sheet,
 	SheetContent,
@@ -8,7 +7,6 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '../../ui/sheet';
-import { useToast } from '../../ui/use-toast';
 import { Participation } from '../../../Types/Participation';
 import {
 	MainContainer,
@@ -17,10 +15,8 @@ import {
 	Message,
 	ConversationHeader,
 } from '@chatscope/chat-ui-kit-react';
-import { authorizedFetch } from '../../../auth';
-import settings from '../../../settings';
-import { useEffect, useState } from 'react';
-import { ChatMessage } from '../../../Types/Message';
+import { useState } from 'react';
+import { useMessages } from '../../../hooks/useMessages';
 
 interface MessageHistoryProps {
 	participation: Participation;
@@ -28,40 +24,8 @@ interface MessageHistoryProps {
 
 export default function MessageHistory({ participation }: MessageHistoryProps) {
 	const phone = participation.user.phone;
-
 	const [isOpen, setIsOpen] = useState(false);
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
-	const { toast } = useToast();
-
-	const fetchMessages = async () => {
-		if (messages.length != 0) return;
-
-		setIsLoading(true);
-		try {
-			const url = `${settings.apiUrl}api/messages/history?id=${participation.user.id}`;
-			const response = await authorizedFetch(url);
-			if (!response.ok) {
-				toast({
-					title: 'Fallo al conseguir usuarios',
-					description: response.status,
-				});
-				return;
-			}
-
-			const data = await response.json();
-			setMessages(data.reverse());
-		} catch (error) {
-			console.error('Error fetching users: ', error);
-		}
-		setIsLoading(false);
-	};
-
-	useEffect(() => {
-		if (isOpen) {
-			fetchMessages();
-		}
-	}, [isOpen]);
+	const { messages, isLoading } = useMessages(participation.user.id, isOpen);
 
 	return (
 		<Sheet open={isOpen} onOpenChange={setIsOpen}>
