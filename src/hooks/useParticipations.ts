@@ -65,7 +65,7 @@ export function useParticipations(searchParams: URLSearchParams) {
 			});
 
 			const response = await authorizedFetch(
-				`${settings.apiUrl}/dashboard/participations?limit=${PAGE_SIZE}&${adjustedParams.toString()}`,
+				`${settings.apiUrl}/dashboard/participations/?limit=${PAGE_SIZE}&${adjustedParams.toString()}`,
 			);
 
 			if (response.status === 404) {
@@ -131,7 +131,7 @@ export function useParticipations(searchParams: URLSearchParams) {
 
 	const acceptDocuments = async (participation: Participation) => {
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/accept-documents`;
+			const url = `${settings.apiUrl}/api/dashboard/accept-documents/`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -154,7 +154,7 @@ export function useParticipations(searchParams: URLSearchParams) {
 
 	const rejectDocuments = async (participation: Participation) => {
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/reject-documents`;
+			const url = `${settings.apiUrl}/api/dashboard/reject-documents/`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },

@@ -13,7 +13,7 @@ export function useMessages(userId: string, isOpen: boolean) {
 
 		setIsLoading(true);
 		try {
-			const url = `${settings.apiUrl}/api/messages/history?id=${userId}`;
+			const url = `${settings.apiUrl}/api/messages/history/?id=${userId}`;
 			const response = await authorizedFetch(url);
 			if (!response.ok) {
 				handleApiError('Fallo al conseguir mensajes', response.status);

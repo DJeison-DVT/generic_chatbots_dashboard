@@ -17,7 +17,7 @@ export function useTicket(
 	const rejectTicket = async (reason: string) => {
 		setDisabled(true);
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/reject`;
+			const url = `${settings.apiUrl}/api/dashboard/reject/`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -42,7 +42,7 @@ export function useTicket(
 	const submitTicket = async (ticketNumber: string): Promise<boolean> => {
 		setDisabled(true);
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/accept`;
+			const url = `${settings.apiUrl}/api/dashboard/accept/`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
