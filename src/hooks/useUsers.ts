@@ -36,8 +36,9 @@ export function useUsers() {
 			setUsers(sortedUsers);
 		} catch (error) {
 			handleCaughtError(error, 'Error fetching users');
+		} finally {
+			setIsLoading(false);
 		}
-		setIsLoading(false);
 	};
 
 	useEffect(() => {
