@@ -1,5 +1,5 @@
 import { NavLink, useFetcher, useRouteLoaderData } from 'react-router-dom';
-import { Gauge, ShoppingCart, LogOut, Contact, Award } from 'lucide-react';
+import { Gauge, ShoppingCart, LogOut, Award } from 'lucide-react';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
 import React, { useState } from 'react';

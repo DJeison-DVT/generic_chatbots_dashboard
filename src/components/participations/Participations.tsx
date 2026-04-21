@@ -55,7 +55,7 @@ export default function Participations() {
 		const participation = row.original;
 		const user = participation.user;
 		const chatbotData = user.chatbot_data ?? {};
-		const participationData = participation.participation_data ?? {};
+		const participationData: Record<string, unknown> = participation.participation_data ?? {};
 
 		return (
 			<div>
