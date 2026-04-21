@@ -120,12 +120,12 @@ export default function Sidebar() {
 								<Award />
 								Premios
 							</NavigationTab>
-							{role === 'admin' && (
+							{/* {role === 'admin' && (
 								<NavigationTab to="/dashboard/users">
 									<Contact />
 									Usuarios
 								</NavigationTab>
-							)}
+							)} */}
 						</>
 					)}
 				</nav>
