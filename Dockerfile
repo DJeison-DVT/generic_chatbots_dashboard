@@ -1,4 +1,4 @@
-FROM node:20.14.0 AS build
+FROM node:22 AS build
 WORKDIR /app
 
 ARG VITE_REACT_APP_API_URL
