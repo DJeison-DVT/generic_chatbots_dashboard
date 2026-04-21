@@ -1,48 +1,166 @@
-import { ScrollArea } from './ui/scroll-area';
-// import { useLoaderData } from 'react-router-dom';
+import { useAnalytics } from '../hooks/useAnalytics';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-interface ChartEmbedProps {
-	chartLink: string;
+const STATUS_COLORS = [
+	'hsl(222, 47%, 11%)',
+	'hsl(215, 20%, 65%)',
+	'hsl(210, 40%, 80%)',
+	'hsl(0, 84%, 60%)',
+	'hsl(210, 40%, 96%)',
+	'hsl(217, 33%, 17%)',
+	'hsl(200, 15%, 46%)',
+	'hsl(220, 14%, 30%)',
+];
+
+function StatCard({
+	label,
+	value,
+	loading,
+}: {
+	label: string;
+	value: number;
+	loading: boolean;
+}) {
+	return (
+		<div className="rounded-lg border border-border bg-card p-6">
+			<p className="text-sm text-muted-foreground">{label}</p>
+			<p className="mt-2 text-3xl font-semibold tracking-tight">
+				{loading ? (
+					<span className="inline-block h-8 w-20 animate-pulse rounded bg-muted" />
+				) : (
+					value.toLocaleString()
+				)}
+			</p>
+		</div>
+	);
 }
 
-const ChartEmbed: React.FC<ChartEmbedProps> = ({ chartLink }) => {
+function StatusPieChart({
+	data,
+	loading,
+}: {
+	data: { status: string; count: number }[];
+	loading: boolean;
+}) {
+	if (loading) {
+		return (
+			<div className="flex h-full items-center justify-center">
+				<div className="h-48 w-48 animate-pulse rounded-full bg-muted" />
+			</div>
+		);
+	}
+
+	if (data.length === 0) {
+		return (
+			<div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+				Sin datos
+			</div>
+		);
+	}
+
+	const total = data.reduce((sum, d) => sum + d.count, 0);
+
 	return (
-		<iframe
-			style={{
-				background: '#FFFFFF',
-				border: 'none',
-				borderRadius: '2px',
-				boxShadow: '0 2px 10px 0 rgba(70, 76, 79, .2)',
-			}}
-			className="h-[540px] w-full"
-			src={chartLink}
-			title="MongoDB Atlas Chart"
-		/>
+		<div className="flex h-full flex-col items-center gap-6 lg:flex-row lg:items-start">
+			<div className="h-64 w-64 flex-shrink-0">
+				<ResponsiveContainer width="100%" height="100%">
+					<PieChart>
+						<Pie
+							data={data}
+							dataKey="count"
+							nameKey="status"
+							cx="50%"
+							cy="50%"
+							innerRadius={60}
+							outerRadius={100}
+							paddingAngle={2}
+							strokeWidth={0}
+						>
+							{data.map((_, i) => (
+								<Cell
+									key={i}
+									fill={STATUS_COLORS[i % STATUS_COLORS.length]}
+								/>
+							))}
+						</Pie>
+						<Tooltip
+							content={({ payload }) => {
+								if (!payload?.length) return null;
+								const item = payload[0];
+								return (
+									<div className="rounded-md border border-border bg-card px-3 py-2 text-sm shadow-sm">
+										<span className="font-medium">{item.name}</span>
+										<span className="ml-2 text-muted-foreground">
+											{item.value}
+										</span>
+									</div>
+								);
+							}}
+						/>
+					</PieChart>
+				</ResponsiveContainer>
+			</div>
+			<div className="flex flex-wrap gap-x-6 gap-y-2 text-sm lg:flex-col lg:pt-6">
+				{data.map((d, i) => {
+					const pct = total > 0 ? ((d.count / total) * 100).toFixed(1) : '0';
+					return (
+						<div key={d.status} className="flex items-center gap-2">
+							<span
+								className="inline-block h-3 w-3 rounded-full"
+								style={{
+									backgroundColor:
+										STATUS_COLORS[i % STATUS_COLORS.length],
+								}}
+							/>
+							<span className="text-foreground">{d.status}</span>
+							<span className="text-muted-foreground">
+								{pct}%
+							</span>
+						</div>
+					);
+				})}
+			</div>
+		</div>
 	);
-};
+}
 
 export default function Dashboard() {
-	// const { role } = useLoaderData() as { role: string };
+	const {
+		totalParticipations,
+		uniqueUsers,
+		totalPrizes,
+		statusBreakdown,
+		isLoading,
+	} = useAnalytics();
+
 	return (
-		<div className="flex-1 w-full flex flex-col overflow-hidden bg-background">
-			<ScrollArea className="flex-1 flex flex-col p-4">
-				<div className="grid grid-cols-2 gap-4 flex-1">
-					<div className="grid grid-cols-3 gap-4 col-span-2">
-						<ChartEmbed chartLink="https://charts.mongodb.com/charts-kleenex-promo-qiyrdzy/embed/charts?id=3ee178d3-611d-481e-9606-6e154f87caca&maxDataAge=3600&theme=light&autoRefresh=true" />
-						<ChartEmbed chartLink="https://charts.mongodb.com/charts-kleenex-promo-qiyrdzy/embed/charts?id=8ab6b725-03fc-4691-a4a0-e8526945cc2e&maxDataAge=3600&theme=light&autoRefresh=true" />
-						<ChartEmbed chartLink="https://charts.mongodb.com/charts-kleenex-promo-qiyrdzy/embed/charts?id=3e8bca96-27a7-4ff4-89f3-9bb20c0c3dd9&maxDataAge=3600&theme=light&autoRefresh=true" />
-					</div>
-					<div className="w-full h-full col-span-2">
-						<ChartEmbed chartLink="https://charts.mongodb.com/charts-kleenex-promo-qiyrdzy/embed/charts?id=8baad83c-bf4e-4ec2-b852-239160d030b8&maxDataAge=3600&theme=light&autoRefresh=true" />
-					</div>
-					{/* {role !== 'viewer' && (
-						<>
-							<ChartEmbed chartLink="https://charts.mongodb.com/charts-kleenex-promo-qiyrdzy/embed/charts?id=5c01eefe-fcc4-4b7d-b989-a79b9d3c56d9&maxDataAge=14400&theme=light&autoRefresh=true" />
-							<ChartEmbed chartLink="https://charts.mongodb.com/charts-kleenex-promo-qiyrdzy/embed/charts?id=72033d90-850b-46e3-8ee6-abee47f8b559&maxDataAge=14400&theme=light&autoRefresh=true" />
-						</>
-					)} */}
+		<div className="flex-1 w-full overflow-auto bg-background p-6">
+			<div className="mx-auto max-w-5xl space-y-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<StatCard
+						label="Total participaciones"
+						value={totalParticipations}
+						loading={isLoading}
+					/>
+					<StatCard
+						label="Usuarios únicos"
+						value={uniqueUsers}
+						loading={isLoading}
+					/>
+					<StatCard
+						label="Premios asignados"
+						value={totalPrizes}
+						loading={isLoading}
+					/>
 				</div>
-			</ScrollArea>
+
+				<div className="rounded-lg border border-border bg-card p-6">
+					<h2 className="mb-4 text-sm font-medium text-muted-foreground">
+						Estado de participaciones
+					</h2>
+					<StatusPieChart data={statusBreakdown} loading={isLoading} />
+				</div>
+			</div>
 		</div>
 	);
 }
