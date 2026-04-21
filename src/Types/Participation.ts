@@ -15,16 +15,17 @@ export type Participation = {
 	updated_at: Date;
 	current_step: string | null;
 	flow_name: string;
-	status: string;
+	status: Status;
 	participation_data: ParticipationData;
 };
 
-export type Status =
-	| 'in_progress'
-	| 'pending_review'
-	| 'approved'
-	| 'rejected'
-	| 'completed';
+export enum Status {
+	InProgress = 'in_progress',
+	PendingReview = 'pending_review',
+	Approved = 'approved',
+	Rejected = 'rejected',
+	Completed = 'completed',
+}
 
 export const StatusDisplayOptions: Record<Status, string> = {
 	in_progress: 'En progreso',

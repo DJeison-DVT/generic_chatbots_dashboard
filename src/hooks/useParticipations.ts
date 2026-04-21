@@ -1,6 +1,6 @@
 // src/hooks/useParticipations.ts
 import { useState, useEffect, useCallback } from 'react';
-import { Participation, ParticipationData } from '../Types/Participation';
+import { Participation, ParticipationData, Status } from '../Types/Participation';
 import settings from '../settings';
 import { authorizedFetch } from '../auth';
 import { handleApiError, handleCaughtError } from './apiError';
@@ -81,7 +81,7 @@ export function useParticipations(searchParams: URLSearchParams) {
 					updated_at: new Date(item.updated_at),
 					current_step: item.current_step,
 					flow_name: item.flow_name,
-					status: item.status,
+					status: item.status as Status,
 					participation_data: item.participation_data as ParticipationData,
 				}),
 			);

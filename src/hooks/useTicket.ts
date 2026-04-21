@@ -1,6 +1,6 @@
 // src/hooks/useTicket.ts
 import { useState } from 'react';
-import { Participation } from '../Types/Participation';
+import { Participation, Status } from '../Types/Participation';
 import settings from '../settings';
 import { authorizedFetch } from '../auth';
 import { handleApiError, handleCaughtError } from './apiError';
@@ -11,7 +11,7 @@ export function useTicket(
 	onRefresh: () => Promise<void>,
 ) {
 	const [disabled, setDisabled] = useState(
-		participation.participation_data?.serial_number != null,
+		participation.status !== Status.PendingReview,
 	);
 
 	const rejectTicket = async (reason: string) => {

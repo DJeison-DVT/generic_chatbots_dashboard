@@ -63,7 +63,7 @@ function StatusPieChart({
 	const displayData = data.map((d) => ({
 		...d,
 		label:
-			StatusDisplayOptions[d.status.toLowerCase() as Status] ?? d.status,
+			StatusDisplayOptions[d.status as Status] ?? d.status,
 	}));
 
 	return (
