@@ -1,16 +1,10 @@
 export type User = {
 	id: string;
 	phone: string;
-	terms: boolean;
-	physical_terms: boolean;
+	provider: string;
+	chatbot_flow: string;
 	name: string;
-	email: string;
-	address: string;
-	date_of_birth: string;
-	complete: boolean;
-	documented: boolean;
-	ine_front_url: string;
-	ine_back_url: string;
+	chatbot_data: Record<string, unknown> | null;
 };
 
 export type DashboardUser = {

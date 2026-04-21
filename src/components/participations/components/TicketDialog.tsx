@@ -63,7 +63,7 @@ export default function TicketDialog({
 		resolver: zodResolver(ticketNumberSchema),
 		defaultValues: {
 			// ticketNumber: participation.serial_number || '',
-			ticketNumber: participation.participation_data.serial_number || '',
+			ticketNumber: participation.participation_data?.serial_number || '',
 		},
 	});
 
@@ -101,13 +101,13 @@ export default function TicketDialog({
 					<div className="flex h-80">
 						<div className="min-w-[500px]">
 							<FullImage
-								src={`${settings.bucketURL + participation.participation_data.ticket_url}`}
+								src={`${settings.bucketURL + participation.participation_data?.ticket_url}`}
 								alt="ticket"
 								setParentField={setFormTicketNumber}
 							>
 								<img
 									className="max-h-[600px]"
-									src={`${settings.bucketURL + participation.participation_data.ticket_url}`}
+									src={`${settings.bucketURL + participation.participation_data?.ticket_url}`}
 								/>
 							</FullImage>
 						</div>

@@ -2,7 +2,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Participation, Status } from '../../Types/Participation';
 import DocumentsDataTableColumnHeaderCheckbox from '../tables/documents-checkbox-menu';
 import { DataTableColumnHeaderSearch } from '../tables/search-menu';
-import { isPhoneFilterFn, isSelectedFilterFn } from './filters';
+import { isSelectedFilterFn } from './filters';
 import MessageHistory from './components/MessageHistory';
 import { Minus, Plus } from 'lucide-react';
 
@@ -86,11 +86,10 @@ export const columns: ColumnDef<Participation>[] = [
 	},
 	{
 		accessorKey: 'user_id',
-		id: 'user_id',
+		id: 'phone',
 		header: ({ column }) => (
 			<DataTableColumnHeaderSearch column={column} title="Usuario" />
 		),
-		filterFn: isPhoneFilterFn,
 		cell: ({ row }) => {
 			const participation = row.original;
 			return participation ? (

@@ -1,12 +1,9 @@
 // src/components/participations/Participations.tsx
-import React, { useState } from 'react';
 import { Participation } from '../../Types/Participation';
 import { columns as originalColumns } from './columns';
 import { DataTable } from './data-table';
 import TicketDialog from './components/TicketDialog';
 import { ColumnDef, Row } from '@tanstack/react-table';
-import { toast } from '../ui/use-toast';
-import { Button } from '../ui/button';
 import FullImage from '../ui/full-image';
 import { useSearchParams } from 'react-router-dom';
 import { useParticipations } from '../../hooks/useParticipations';
@@ -14,21 +11,15 @@ import settings from '../../settings';
 
 export default function Participations() {
 	const [searchParams] = useSearchParams();
-	const {
-		participations,
-		isLoading,
-		pageCount,
-		fetchParticipations,
-		acceptDocuments,
-		rejectDocuments,
-	} = useParticipations(searchParams);
+	const { participations, isLoading, pageCount, fetchParticipations } =
+		useParticipations(searchParams);
 
 	const ticketColumn: ColumnDef<Participation> = {
 		header: 'Ticket',
 		accessorKey: 'id',
 		cell: ({ row }) => {
 			const participation = row.original;
-			return participation.participation_data.ticket_url ? (
+			return participation.participation_data?.ticket_url ? (
 				<TicketDialog
 					participation={participation}
 					onTicketSend={fetchParticipations}
@@ -43,147 +34,72 @@ export default function Participations() {
 		...originalColumns.slice(3),
 	];
 
-	const [documentationChecks, setDocumentationChecks] = useState({
-		ine_front: false,
-		ine_back: false,
-	});
-
-	const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, checked } = event.target;
-		setDocumentationChecks((prevState) => ({
-			...prevState,
-			[name]: checked,
-		}));
+	const CHATBOT_DATA_WHITELIST: Record<string, string> = {
+		email: 'Email',
+		date_of_birth: 'Fecha de nacimiento',
+		address: 'Dirección',
+		name: 'Nombre',
 	};
 
-	const handleDocumentationConfirm = async (participation: Participation) => {
-		if (!documentationChecks.ine_front || !documentationChecks.ine_back) {
-			toast({ title: 'Favor de confirmar todos los documentos' });
-			return;
-		}
-		await acceptDocuments(participation);
+	const PARTICIPATION_DATA_WHITELIST: Record<string, string> = {
+		amount_total: 'Monto total',
+		serial_number: 'Numero de serie',
+	};
+
+	const IMAGE_WHITELIST: Record<string, string> = {
+		ine_front_url: 'INE Frontal',
+		ine_back_url: 'INE Posterior',
 	};
 
 	const renderSubComponent = ({ row }: { row: Row<Participation> }) => {
 		const participation = row.original;
 		const user = participation.user;
+		const chatbotData = user.chatbot_data ?? {};
+		const participationData = participation.participation_data ?? {};
 
 		return (
 			<div>
 				<p>
 					<strong>Nombre:</strong> {user.name}
 				</p>
-				{/* <p>
-					<strong>Premio:</strong>{' '}
-					{!isNaN(Number(participation.prize))
-						? `Cupon de ${participation.prize}`
-						: participation.prize}
-				</p>
-				<p>
-					<strong>Numero de participacion:</strong> {participation.priority_number}
-				</p> */}
-				<p>
-					<strong>Email:</strong> {user.email}
-				</p>
-				<p>
-					<strong>Fecha de nacimiento:</strong> {user.date_of_birth}
-				</p>
-				{user.physical_terms ? (
-					<p className="text-green-500">Terminos fisicos aceptados</p>
-				) : (
-					<p className="text-red-500">Terminos fisicos no han sido aceptados</p>
-				)}
-				{user.address && (
-					<p>
-						<strong>Dirección:</strong> {user.address}
-					</p>
-				)}
-				{user.documented ? (
-					<p className="text-green-500">Documentado</p>
-				) : (
-					<p className="text-red-500">No documentado</p>
-				)}
+				{Object.entries(CHATBOT_DATA_WHITELIST).map(([key, label]) => {
+					const value = chatbotData[key];
+					if (value == null || value === '') return null;
+					return (
+						<p key={key}>
+							<strong>{label}:</strong> {String(value)}
+						</p>
+					);
+				})}
+				{Object.entries(PARTICIPATION_DATA_WHITELIST).map(([key, label]) => {
+					const value = participationData[key];
+					if (value == null || value === '') return null;
+					return (
+						<p key={key}>
+							<strong>{label}:</strong> {String(value)}
+						</p>
+					);
+				})}
 				<div className="flex p-4 gap-4">
-					{user.ine_front_url && (
-						<div className="flex flex-col justify-center items-center">
-							<p className="text-center font-bold">INE Frontal</p>
-							<FullImage
-								src={settings.bucketURL + user.ine_front_url}
-								alt="INE Front"
+					{Object.entries(IMAGE_WHITELIST).map(([key, label]) => {
+						const url = chatbotData[key];
+						if (!url) return null;
+						return (
+							<div
+								key={key}
+								className="flex flex-col justify-center items-center"
 							>
-								<img
-									src={settings.bucketURL + user.ine_front_url}
-									alt="INE Front"
-									className="h-80 w-auto object-contain"
-								/>
-							</FullImage>
-						</div>
-					)}
-					{user.ine_back_url && (
-						<div className="flex flex-col justify-center items-center">
-							<p className="text-center font-bold">INE Posterior</p>
-							<FullImage
-								src={settings.bucketURL + user.ine_back_url}
-								alt="INE Back"
-							>
-								<img
-									src={settings.bucketURL + user.ine_back_url}
-									alt="INE Back"
-									className="h-80 w-auto object-contain"
-								/>
-							</FullImage>
-						</div>
-					)}
-					{user.ine_front_url && user.ine_back_url && !user.documented && (
-						<div>
-							<form className="flex flex-col gap-2">
-								<div>Confirmar documentacion:</div>
-								<div className="flex-col flex [&>div]:flex [&>div]:gap-2 ">
-									<div>
-										<input
-											type="checkbox"
-											name="ine_front"
-											checked={documentationChecks.ine_front}
-											onChange={handleCheckboxChange}
-										/>
-										<label htmlFor="ine_front">
-											He revisado el INE frontal.
-										</label>
-									</div>
-									<div>
-										<input
-											type="checkbox"
-											name="ine_back"
-											checked={documentationChecks.ine_back}
-											onChange={handleCheckboxChange}
-										/>
-										<label htmlFor="ine_back">
-											He revisado el INE posterior.
-										</label>
-									</div>
-								</div>
-								<div className="flex gap-2">
-									<Button
-										type="button"
-										onClick={() => handleDocumentationConfirm(participation)}
-										disabled={
-											!documentationChecks.ine_front ||
-											!documentationChecks.ine_back
-										}
-									>
-										Confirmar
-									</Button>
-									<Button
-										type="button"
-										onClick={() => rejectDocuments(participation)}
-										variant="destructive"
-									>
-										Rechazar
-									</Button>
-								</div>
-							</form>
-						</div>
-					)}
+								<p className="text-center font-bold">{label}</p>
+								<FullImage src={settings.bucketURL + url} alt={label}>
+									<img
+										src={settings.bucketURL + url}
+										alt={label}
+										className="h-80 w-auto object-contain"
+									/>
+								</FullImage>
+							</div>
+						);
+					})}
 				</div>
 			</div>
 		);

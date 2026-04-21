@@ -1,7 +1,6 @@
 // src/hooks/useParticipations.ts
 import { useState, useEffect, useCallback } from 'react';
 import { Participation, ParticipationData } from '../Types/Participation';
-import { User } from '../Types/User';
 import settings from '../settings';
 import { authorizedFetch } from '../auth';
 import { handleApiError, handleCaughtError } from './apiError';
@@ -14,26 +13,17 @@ interface RawParticipationItem {
 	user_id: string;
 	created_at: string;
 	updated_at: string;
-	current_step: string;
+	current_step: string | null;
 	flow_name: string;
 	status: string;
-	participation_data: {
-		ticket_url: string | null;
-		rejection_reason: string | null;
-		ticket_attempts: number | null;
-		serial_number: string | null;
-		amount_total: number | null;
-		cluster_id: string | null;
-		document_id: string | null;
-		duplicate_count: number | null;
-		sha256_hash: string | null;
-		store_name: string | null;
-	};
+	participation_data: Record<string, unknown> | null;
 	user: {
 		id: string;
 		number: string;
 		provider: string;
-		name?: string;
+		chatbot_flow: string;
+		user_display_name: string | null;
+		chatbot_data: Record<string, unknown> | null;
 	};
 }
 
@@ -65,7 +55,7 @@ export function useParticipations(searchParams: URLSearchParams) {
 			});
 
 			const response = await authorizedFetch(
-				`${settings.apiUrl}/dashboard/participations/?limit=${PAGE_SIZE}&${adjustedParams.toString()}`,
+				`${settings.apiUrl}/dashboard/participations/?limit=${PAGE_SIZE}&ordering=-created_at&${adjustedParams.toString()}`,
 			);
 
 			if (response.status === 404) {
@@ -76,49 +66,24 @@ export function useParticipations(searchParams: URLSearchParams) {
 			setPageCount(Math.ceil(data.count / PAGE_SIZE));
 
 			const transformedData = data.participations.map(
-				(item: RawParticipationItem) => {
-					const participationData: ParticipationData = {
-						ticket_url: item.participation_data.ticket_url,
-						rejection_reason: item.participation_data.rejection_reason,
-						ticket_attempts: item.participation_data.ticket_attempts,
-						serial_number: item.participation_data.serial_number,
-						amount_total: item.participation_data.amount_total,
-						cluster_id: item.participation_data.cluster_id,
-						document_id: item.participation_data.document_id,
-						duplicate_count: item.participation_data.duplicate_count,
-						sha256_hash: item.participation_data.sha256_hash,
-						store_name: item.participation_data.store_name,
-					};
-
-					const userObject: User = {
+				(item: RawParticipationItem): Participation => ({
+					id: item.id,
+					user_id: item.user_id,
+					user: {
 						id: item.user.id,
 						phone: item.user.number,
-						name: item.user.name ?? '',
-						terms: false,
-						physical_terms: false,
-						email: '',
-						address: '',
-						date_of_birth: '',
-						complete: false,
-						documented: false,
-						ine_front_url: '',
-						ine_back_url: '',
-					};
-
-					const result: Participation = {
-						id: item.id,
-						user_id: item.user_id,
-						user: userObject,
-						created_at: new Date(item.created_at),
-						updated_at: new Date(item.updated_at),
-						current_step: item.current_step,
-						flow_name: item.flow_name,
-						status: item.status,
-						participation_data: participationData,
-					};
-
-					return result;
-				},
+						provider: item.user.provider,
+						chatbot_flow: item.user.chatbot_flow,
+						name: item.user.user_display_name ?? '',
+						chatbot_data: item.user.chatbot_data,
+					},
+					created_at: new Date(item.created_at),
+					updated_at: new Date(item.updated_at),
+					current_step: item.current_step,
+					flow_name: item.flow_name,
+					status: item.status,
+					participation_data: item.participation_data as ParticipationData,
+				}),
 			);
 
 			setParticipations(transformedData);

@@ -11,7 +11,7 @@ export function useTicket(
 	onRefresh: () => Promise<void>,
 ) {
 	const [disabled, setDisabled] = useState(
-		participation.participation_data.serial_number !== null,
+		participation.participation_data?.serial_number != null,
 	);
 
 	const rejectTicket = async (reason: string) => {
