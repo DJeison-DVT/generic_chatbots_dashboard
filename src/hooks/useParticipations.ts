@@ -96,20 +96,18 @@ export function useParticipations(searchParams: URLSearchParams) {
 
 	const acceptDocuments = async (participation: Participation) => {
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/accept-documents/`;
+			const url = `${settings.apiUrl}/dashboard/participations/${participation.id}/accept-documentation`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ ticket_id: participation.id }),
 			});
 			if (!response.ok) {
 				const body = await response.json();
 				handleApiError(
-					body.detail || 'Error al aceptar ticket',
+					body.detail?.[0]?.msg || 'Error al aceptar documentación',
 					response.status,
 				);
 			} else {
-				toast({ title: 'Ticket aceptado' });
+				toast({ title: 'Documentación aceptada' });
 				await fetchParticipations();
 			}
 		} catch (error) {
@@ -119,20 +117,18 @@ export function useParticipations(searchParams: URLSearchParams) {
 
 	const rejectDocuments = async (participation: Participation) => {
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/reject-documents/`;
+			const url = `${settings.apiUrl}/dashboard/participations/${participation.id}/reject-documentation`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ ticket_id: participation.id }),
 			});
 			if (!response.ok) {
 				const body = await response.json();
 				handleApiError(
-					body.detail || 'Error al rechazar ticket',
+					body.detail?.[0]?.msg || 'Error al rechazar documentación',
 					response.status,
 				);
 			} else {
-				toast({ title: 'Ticket rechazado' });
+				toast({ title: 'Documentación rechazada' });
 				await fetchParticipations();
 			}
 		} catch (error) {

@@ -17,17 +17,20 @@ export function useTicket(
 	const rejectTicket = async (reason: string) => {
 		setDisabled(true);
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/reject/`;
+			const url = `${settings.apiUrl}/dashboard/participations/${participation.id}/reject-participation`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					ticket_id: participation.id,
 					rejection_reason: reason,
 				}),
 			});
 			if (!response.ok) {
-				handleApiError('Error al rechazar ticket', response.status);
+				const body = await response.json();
+				handleApiError(
+					body.detail?.[0]?.msg || 'Error al rechazar ticket',
+					response.status,
+				);
 			} else {
 				toast({ title: 'Ticket rechazado' });
 				await onRefresh();
@@ -42,24 +45,22 @@ export function useTicket(
 	const submitTicket = async (ticketNumber: string): Promise<boolean> => {
 		setDisabled(true);
 		try {
-			const url = `${settings.apiUrl}/api/dashboard/accept/`;
+			const url = `${settings.apiUrl}/dashboard/participations/${participation.id}/accept-participation`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					ticket_id: participation.id,
 					serial_number: ticketNumber,
 				}),
 			});
 			if (!response.ok) {
 				if (response.status === 409) {
-					// Delegate to rejectTicket; it manages disabled state; return before trailing setDisabled(false)
 					await rejectTicket('Folio Repetido');
 					return false;
 				}
 				const body = await response.json();
 				handleApiError(
-					body.detail || 'Error al aceptar ticket',
+					body.detail?.[0]?.msg || 'Error al aceptar ticket',
 					response.status,
 				);
 			} else {
