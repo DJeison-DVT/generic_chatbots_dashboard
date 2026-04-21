@@ -12,7 +12,7 @@ export function useFlows() {
 		async function fetchFlows() {
 			try {
 				const response = await authorizedFetch(
-					`${settings.apiUrl}/dashboard/flows/`,
+					`${settings.apiUrl}/dashboard/flows`,
 				);
 				if (response.ok) {
 					const data = await response.json();

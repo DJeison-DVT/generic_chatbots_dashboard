@@ -52,9 +52,9 @@ export function useAnalytics(): AnalyticsData {
 
 			try {
 				const [partRes, convRes, statusRes, dailyRes] = await Promise.all([
-					authorizedFetch(`${base}/participations/summary/`),
-					authorizedFetch(`${base}/conversations/summary/`),
-					authorizedFetch(`${base}/participations/by-status/`),
+					authorizedFetch(`${base}/participations/summary`),
+					authorizedFetch(`${base}/conversations/summary`),
+					authorizedFetch(`${base}/participations/by-status`),
 					authorizedFetch(`${base}/participations/daily-counters`),
 				]);
 

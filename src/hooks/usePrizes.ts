@@ -11,7 +11,7 @@ export function usePrizes() {
 	const fetchPrizes = async () => {
 		setIsLoading(true);
 		try {
-			const url = `${settings.apiUrl}/dashboard/codes/count/`;
+			const url = `${settings.apiUrl}/dashboard/codes/count`;
 			const response = await authorizedFetch(url);
 
 			if (!response.ok) {

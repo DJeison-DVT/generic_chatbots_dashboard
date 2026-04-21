@@ -55,7 +55,7 @@ export function useParticipations(searchParams: URLSearchParams) {
 			});
 
 			const response = await authorizedFetch(
-				`${settings.apiUrl}/dashboard/participations/?limit=${PAGE_SIZE}&ordering=-created_at&${adjustedParams.toString()}`,
+				`${settings.apiUrl}/dashboard/participations?limit=${PAGE_SIZE}&ordering=-created_at&${adjustedParams.toString()}`,
 			);
 
 			if (response.status === 404) {
