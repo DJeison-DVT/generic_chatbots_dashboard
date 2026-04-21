@@ -1,6 +1,7 @@
 import { LoaderFunctionArgs, redirect } from 'react-router-dom';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import settings from './settings';
+import { flowStore } from './flowStore';
 
 interface CustomJwtPayload extends JwtPayload {
 	sub: string;
@@ -125,6 +126,15 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
 		throw new Error('Invalid token');
 	}
 	const token = localStorage.getItem(settings.tokenName);
+
+	const selectedFlow = flowStore.getSelectedFlow();
+	if (selectedFlow) {
+		const urlObj = new URL(url);
+		if (!urlObj.searchParams.has('flow_name')) {
+			urlObj.searchParams.set('flow_name', selectedFlow);
+		}
+		url = urlObj.toString();
+	}
 
 	const headers = {
 		...options.headers,

@@ -1,7 +1,10 @@
 import { NavLink, useFetcher, useRouteLoaderData } from 'react-router-dom';
-import { Gauge, ShoppingCart, LogOut } from 'lucide-react';
+import { Gauge, ShoppingCart, LogOut, Contact, Award } from 'lucide-react';
 import { Button } from './ui/button';
-import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
+import React, { useState } from 'react';
+import { useFlows } from '../hooks/useFlows';
+import { flowStore } from '../flowStore';
 
 function AuthStatus() {
 	let { user } = useRouteLoaderData('root') as { user: string | null };
@@ -46,11 +49,48 @@ const NavigationTab: React.FC<NavigationTabProps> = ({
 	);
 };
 
+function FlowSelector() {
+	const { flows, isLoading } = useFlows();
+	const [selected, setSelected] = useState(flowStore.getSelectedFlow() ?? '');
+
+	React.useEffect(() => {
+		if (!selected && flows.length > 0) {
+			const defaultFlow = flows[0].name;
+			setSelected(defaultFlow);
+			flowStore.setSelectedFlow(defaultFlow);
+		}
+	}, [flows, selected]);
+
+	const handleChange = (value: string) => {
+		setSelected(value);
+		flowStore.setSelectedFlow(value);
+		window.location.reload();
+	};
+
+	const displayName =
+		flows.find((f) => f.name === selected)?.display_name ?? 'Flujo';
+
+	return (
+		<Select value={selected} onValueChange={handleChange} disabled={isLoading}>
+			<SelectTrigger className="h-auto p-4 text-primary text-base bg-transparent border-none rounded-none hover:bg-black/35 w-full focus:ring-0 focus:ring-offset-0">
+				<div className="flex gap-4 truncate">{displayName}</div>
+			</SelectTrigger>
+			<SelectContent>
+				{flows.map((flow) => (
+					<SelectItem key={flow.name} value={flow.name}>
+						{flow.display_name}
+					</SelectItem>
+				))}
+			</SelectContent>
+		</Select>
+	);
+}
+
 export default function Sidebar() {
 	let { role } = useRouteLoaderData('root') as { role: string | null };
 
 	return (
-		<div className="w-fit h-full flex flex-col">
+		<div className="w-64 h-full flex flex-col">
 			<div className="bg-primary w-64 flex justify-center py-2 h-20">
 				{/* <img
 					src="/demente-logo.png"
@@ -59,6 +99,7 @@ export default function Sidebar() {
 				/> */}
 			</div>
 			<div className="flex flex-col bg-dark flex-1">
+				<FlowSelector />
 				<nav className="flex flex-col  text-primary flex-1 *:p-4">
 					{role === 'viewer' ? (
 						<NavigationTab to="/dashboard" end>
@@ -75,7 +116,7 @@ export default function Sidebar() {
 								<ShoppingCart />
 								Participaciones
 							</NavigationTab>
-							{/* <NavigationTab to="/dashboard/prizes">
+							<NavigationTab to="/dashboard/prizes">
 								<Award />
 								Premios
 							</NavigationTab>
@@ -84,7 +125,7 @@ export default function Sidebar() {
 									<Contact />
 									Usuarios
 								</NavigationTab>
-							)} */}
+							)}
 						</>
 					)}
 				</nav>
