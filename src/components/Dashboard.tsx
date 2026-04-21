@@ -1,5 +1,6 @@
 import { useAnalytics } from '../hooks/useAnalytics';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Status, StatusDisplayOptions } from '../Types/Participation';
 
 const STATUS_COLORS = [
 	'hsl(222, 47%, 11%)',
@@ -59,6 +60,11 @@ function StatusPieChart({
 	}
 
 	const total = data.reduce((sum, d) => sum + d.count, 0);
+	const displayData = data.map((d) => ({
+		...d,
+		label:
+			StatusDisplayOptions[d.status.toLowerCase() as Status] ?? d.status,
+	}));
 
 	return (
 		<div className="flex h-full flex-col items-center gap-6 lg:flex-row lg:items-start">
@@ -66,9 +72,9 @@ function StatusPieChart({
 				<ResponsiveContainer width="100%" height="100%">
 					<PieChart>
 						<Pie
-							data={data}
+							data={displayData}
 							dataKey="count"
-							nameKey="status"
+							nameKey="label"
 							cx="50%"
 							cy="50%"
 							innerRadius={60}
@@ -101,7 +107,7 @@ function StatusPieChart({
 				</ResponsiveContainer>
 			</div>
 			<div className="flex flex-wrap gap-x-6 gap-y-2 text-sm lg:flex-col lg:pt-6">
-				{data.map((d, i) => {
+				{displayData.map((d, i) => {
 					const pct = total > 0 ? ((d.count / total) * 100).toFixed(1) : '0';
 					return (
 						<div key={d.status} className="flex items-center gap-2">
@@ -112,7 +118,7 @@ function StatusPieChart({
 										STATUS_COLORS[i % STATUS_COLORS.length],
 								}}
 							/>
-							<span className="text-foreground">{d.status}</span>
+							<span className="text-foreground">{d.label}</span>
 							<span className="text-muted-foreground">
 								{pct}%
 							</span>

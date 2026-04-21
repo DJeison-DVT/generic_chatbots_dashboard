@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { Participation, Status } from '../../Types/Participation';
+import { Participation, Status, StatusDisplayOptions } from '../../Types/Participation';
 import DocumentsDataTableColumnHeaderCheckbox from '../tables/documents-checkbox-menu';
 import { DataTableColumnHeaderSearch } from '../tables/search-menu';
 import { isSelectedFilterFn } from './filters';
@@ -16,14 +16,6 @@ const ExpandButton = ({ children }: expandButtonProps) => {
 			{children}
 		</div>
 	);
-};
-
-const StatusDisplayOptions: Record<Status, string> = {
-	in_progress: 'En progreso',
-	pending_review: 'Pendiente de revisión',
-	approved: 'Aprobado',
-	rejected: 'Rechazado',
-	completed: 'Completado',
 };
 
 // const prizeTypeDisplayOptions: Record<string, string> = {

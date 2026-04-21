@@ -25,3 +25,11 @@ export type Status =
 	| 'approved'
 	| 'rejected'
 	| 'completed';
+
+export const StatusDisplayOptions: Record<Status, string> = {
+	in_progress: 'En progreso',
+	pending_review: 'Pendiente de revisión',
+	approved: 'Aprobado',
+	rejected: 'Rechazado',
+	completed: 'Completado',
+};
