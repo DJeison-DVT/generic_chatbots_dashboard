@@ -1,6 +1,10 @@
 import { useAnalytics } from '../hooks/useAnalytics';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+	PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
+	BarChart, Bar, XAxis, YAxis, CartesianGrid,
+} from 'recharts';
 import { Status, StatusDisplayOptions } from '../Types/Participation';
+import type { DailyCount } from '../hooks/useAnalytics';
 
 const STATUS_COLORS = [
 	'hsl(222, 47%, 11%)',
@@ -33,6 +37,58 @@ function StatCard({
 				)}
 			</p>
 		</div>
+	);
+}
+
+function DailyBarChart({
+	data,
+	loading,
+}: {
+	data: DailyCount[];
+	loading: boolean;
+}) {
+	if (loading) {
+		return (
+			<div className="flex h-64 items-center justify-center">
+				<div className="h-48 w-full animate-pulse rounded bg-muted" />
+			</div>
+		);
+	}
+
+	if (data.length === 0) {
+		return (
+			<div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
+				Sin datos
+			</div>
+		);
+	}
+
+	const displayData = data.map((d) => ({
+		...d,
+		label: new Date(d.date + 'T00:00:00').toLocaleDateString('es', { day: '2-digit', month: 'short' }),
+	}));
+
+	return (
+		<ResponsiveContainer width="100%" height={300}>
+			<BarChart data={displayData}>
+				<CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+				<XAxis dataKey="label" tick={{ fontSize: 12 }} className="text-muted-foreground" />
+				<YAxis allowDecimals={false} tick={{ fontSize: 12 }} className="text-muted-foreground" />
+				<Tooltip
+					content={({ payload }) => {
+						if (!payload?.length) return null;
+						const item = payload[0].payload as DailyCount & { label: string };
+						return (
+							<div className="rounded-md border border-border bg-card px-3 py-2 text-sm shadow-sm">
+								<span className="font-medium">{item.label}</span>
+								<span className="ml-2 text-muted-foreground">{item.count}</span>
+							</div>
+						);
+					}}
+				/>
+				<Bar dataKey="count" fill="hsl(222, 47%, 11%)" radius={[4, 4, 0, 0]} />
+			</BarChart>
+		</ResponsiveContainer>
 	);
 }
 
@@ -136,12 +192,20 @@ export default function Dashboard() {
 		uniqueUsers,
 		totalPrizes,
 		statusBreakdown,
+		dailyCounters,
 		isLoading,
 	} = useAnalytics();
 
 	return (
 		<div className="flex-1 w-full overflow-auto bg-background p-6">
 			<div className="mx-auto max-w-5xl space-y-6">
+				<div className="rounded-lg border border-border bg-card p-6">
+					<h2 className="mb-4 text-sm font-medium text-muted-foreground">
+						Participaciones diarias
+					</h2>
+					<DailyBarChart data={dailyCounters} loading={isLoading} />
+				</div>
+
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<StatCard
 						label="Total participaciones"

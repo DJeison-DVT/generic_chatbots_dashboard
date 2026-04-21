@@ -21,11 +21,17 @@ interface StatusCount {
 	count: number;
 }
 
+export interface DailyCount {
+	date: string;
+	count: number;
+}
+
 export interface AnalyticsData {
 	totalParticipations: number;
 	uniqueUsers: number;
 	totalPrizes: number;
 	statusBreakdown: StatusCount[];
+	dailyCounters: DailyCount[];
 	isLoading: boolean;
 }
 
@@ -34,6 +40,7 @@ export function useAnalytics(): AnalyticsData {
 	const [uniqueUsers, setUniqueUsers] = useState(0);
 	const [totalPrizes, setTotalPrizes] = useState(0);
 	const [statusBreakdown, setStatusBreakdown] = useState<StatusCount[]>([]);
+	const [dailyCounters, setDailyCounters] = useState<DailyCount[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
@@ -44,10 +51,11 @@ export function useAnalytics(): AnalyticsData {
 			const base = `${settings.apiUrl}/dashboard/analytics/flows/${flowName}`;
 
 			try {
-				const [partRes, convRes, statusRes] = await Promise.all([
+				const [partRes, convRes, statusRes, dailyRes] = await Promise.all([
 					authorizedFetch(`${base}/participations/summary/`),
 					authorizedFetch(`${base}/conversations/summary/`),
 					authorizedFetch(`${base}/participations/by-status/`),
+					authorizedFetch(`${base}/participations/daily-counters`),
 				]);
 
 				if (partRes.ok) {
@@ -69,6 +77,11 @@ export function useAnalytics(): AnalyticsData {
 					const data: StatusCount[] = await statusRes.json();
 					setStatusBreakdown(data);
 				}
+
+				if (dailyRes.ok) {
+					const data: DailyCount[] = await dailyRes.json();
+					setDailyCounters(data);
+				}
 			} catch (error) {
 				handleCaughtError(error, 'Error fetching analytics');
 			} finally {
@@ -79,5 +92,5 @@ export function useAnalytics(): AnalyticsData {
 		fetchAnalytics();
 	}, []);
 
-	return { totalParticipations, uniqueUsers, totalPrizes, statusBreakdown, isLoading };
+	return { totalParticipations, uniqueUsers, totalPrizes, statusBreakdown, dailyCounters, isLoading };
 }
