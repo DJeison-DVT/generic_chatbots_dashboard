@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { Participation, Status, StatusDisplayOptions } from '../../Types/Participation';
+import { Participation, PrizeType, PrizeTypeDisplayOptions, Status, StatusDisplayOptions } from '../../Types/Participation';
 import DocumentsDataTableColumnHeaderCheckbox from '../tables/documents-checkbox-menu';
 import { DataTableColumnHeaderSearch } from '../tables/search-menu';
 import { isSelectedFilterFn } from './filters';
@@ -18,10 +18,6 @@ const ExpandButton = ({ children }: expandButtonProps) => {
 	);
 };
 
-// const prizeTypeDisplayOptions: Record<string, string> = {
-// 	physical: 'Físico',
-// 	digital: 'Digital',
-// };
 
 export const columns: ColumnDef<Participation>[] = [
 	{
@@ -89,24 +85,33 @@ export const columns: ColumnDef<Participation>[] = [
 			) : null;
 		},
 	},
-	// {
-	// 	accessorKey: 'prize_type',
-	// 	id: 'prize_type',
-	// 	header: ({ column }) => (
-	// 		<DocumentsDataTableColumnHeaderCheckbox
-	// 			column={column}
-	// 			title="Tipo"
-	// 			id="prize_type"
-	// 			options={['physical', 'digital']}
-	// 			displayOptions={StatusDisplayOptions}
-	// 		/>
-	// 	),
-	// 	filterFn: isSelectedFilterFn,
-	// 	cell: ({ row }) => {
-	// 		const prizeType = row.getValue<string>('prize_type');
-	// 		return prizeType ? prizeTypeDisplayOptions[prizeType] : null;
-	// 	},
-	// },
+	{
+		accessorFn: (row) => row.participation_data?.['prize_type'] as string | undefined,
+		id: 'prize_type',
+		header: ({ column }) => (
+			<DocumentsDataTableColumnHeaderCheckbox
+				column={column}
+				title="Tipo de premio"
+				id="prize_type"
+				options={['physical', 'code']}
+				displayOptions={PrizeTypeDisplayOptions}
+			/>
+		),
+		filterFn: isSelectedFilterFn,
+		cell: ({ row }) => {
+			const prizeType = row.getValue<string>('prize_type') as PrizeType;
+			return prizeType ? (PrizeTypeDisplayOptions[prizeType] ?? prizeType) : null;
+		},
+	},
+	{
+		accessorFn: (row) => row.participation_data?.['prize_name'] as string | undefined,
+		id: 'prize_name',
+		header: 'Premio',
+		cell: ({ row }) => {
+			const prizeName = row.getValue<string>('prize_name');
+			return prizeName ? <div className="max-w-48 truncate" title={prizeName}>{prizeName}</div> : null;
+		},
+	},
 	{
 		accessorKey: 'status',
 		id: 'status',
@@ -121,11 +126,10 @@ export const columns: ColumnDef<Participation>[] = [
 		),
 		filterFn: isSelectedFilterFn,
 		cell: ({ row }) => {
-			var status = row.getValue<string>('status') as Status;
-			status = status.toLowerCase() as Status;
+			const status = row.getValue<Status>('status');
 			return status ? (
 				<div>
-					{StatusDisplayOptions[status] ? StatusDisplayOptions[status] : status}
+					{StatusDisplayOptions[status] ?? status}
 				</div>
 			) : null;
 		},

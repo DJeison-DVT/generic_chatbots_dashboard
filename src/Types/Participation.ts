@@ -34,3 +34,10 @@ export const StatusDisplayOptions: Record<Status, string> = {
 	rejected: 'Rechazado',
 	completed: 'Completado',
 };
+
+export type PrizeType = 'physical' | 'code';
+
+export const PrizeTypeDisplayOptions: Record<PrizeType, string> = {
+	physical: 'Físico',
+	code: 'Código digital',
+};
