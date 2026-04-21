@@ -11,7 +11,7 @@ export function useUsers() {
 	const fetchUsers = async () => {
 		setIsLoading(true);
 		try {
-			const url = `${settings.apiUrl}/dashboard/users`;
+			const url = `${settings.apiUrl}/dashboard/users/`;
 			const response = await authorizedFetch(url);
 			if (!response.ok) {
 				handleApiError('Fallo al conseguir usuarios', response.status);

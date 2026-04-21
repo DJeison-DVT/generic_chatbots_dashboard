@@ -14,7 +14,7 @@ export function useCreateUser(onSuccess: () => Promise<void>) {
 	}) => {
 		setIsLoading(true);
 		try {
-			const url = `${settings.apiUrl}/dashboard/register`;
+			const url = `${settings.apiUrl}/dashboard/register/`;
 			const response = await authorizedFetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
