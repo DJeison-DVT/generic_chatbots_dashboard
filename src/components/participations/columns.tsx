@@ -86,6 +86,15 @@ export const columns: ColumnDef<Participation>[] = [
 		},
 	},
 	{
+		accessorFn: (row) => row.participation_data?.['participation_number'] as number | undefined,
+		id: 'participation_number',
+		header: '# Participación',
+		cell: ({ row }) => {
+			const participationNumber = row.getValue<number>('participation_number');
+			return participationNumber != null ? <div>{participationNumber}</div> : null;
+		},
+	},
+	{
 		accessorFn: (row) => row.participation_data?.['prize_type'] as string | undefined,
 		id: 'prize_type',
 		header: ({ column }) => (
