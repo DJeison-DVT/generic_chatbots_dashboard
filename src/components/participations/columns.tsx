@@ -60,15 +60,20 @@ export const columns: ColumnDef<Participation>[] = [
 		accessorKey: 'created_at',
 		header: 'Fecha',
 		cell: ({ row }) => {
-			let date = row.getValue('created_at');
+			const date = row.getValue('created_at');
 			if (!(date instanceof Date)) {
 				return null;
 			}
-			const padToTwoDigits = (num: number) => num.toString().padStart(2, '0');
-			const formattedDate = `
-	        ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear().toString().slice(-2)}
-	        ${padToTwoDigits(date.getHours())}:${padToTwoDigits(date.getMinutes())}:${padToTwoDigits(date.getSeconds())}
-            `;
+			const formattedDate = date.toLocaleString('es-MX', {
+				timeZone: 'America/Mexico_City',
+				day: '2-digit',
+				month: '2-digit',
+				year: '2-digit',
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit',
+				hour12: false,
+			});
 			return <div>{formattedDate}</div>;
 		},
 	},
