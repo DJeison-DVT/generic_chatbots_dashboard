@@ -179,6 +179,9 @@ export default function TicketDialog({
 														<SelectItem value="Ticket invalido">
 															Ticket invalido
 														</SelectItem>
+														<SelectItem value="Folio Repetido">
+															Folio Repetido
+														</SelectItem>
 													</SelectContent>
 												</Select>
 											</AlertDialogDescription>

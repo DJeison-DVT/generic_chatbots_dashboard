@@ -59,7 +59,7 @@ export function useTicket(
 					response.status === 409 &&
 					(await response.text()).includes('already used in participation')
 				) {
-					await rejectTicket('Folio Repetido');
+					toast({ title: 'Folio repetido', variant: 'destructive' });
 					return false;
 				}
 				const body = await response.json();
