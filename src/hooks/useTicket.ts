@@ -54,7 +54,11 @@ export function useTicket(
 				}),
 			});
 			if (!response.ok) {
-				if (response.status === 409) {
+				// Serial number '{}' already used in participation {}
+				if (
+					response.status === 409 &&
+					(await response.text()).includes('already used in participation')
+				) {
 					await rejectTicket('Folio Repetido');
 					return false;
 				}
