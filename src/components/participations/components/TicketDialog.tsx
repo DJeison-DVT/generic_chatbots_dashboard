@@ -42,9 +42,11 @@ import settings from '../../../settings';
 import { Participation } from '../../../Types/Participation';
 import FullImage from '../../ui/full-image';
 import { useTicket } from '../../../hooks/useTicket';
+import { useFlows } from '../../../hooks/useFlows';
 
 const ticketNumberSchema = z.object({
 	ticketNumber: z.string(),
+	amountTotal: z.string().optional(),
 });
 
 interface TicketDialogProps {
@@ -58,12 +60,19 @@ export default function TicketDialog({
 }: TicketDialogProps) {
 	const [reason, setReason] = useState<string>('');
 	const [isOpen, setIsOpen] = useState(false);
+	const { flows } = useFlows();
+
+	const flow = flows.find((f) => f.name === participation.flow_name);
+	const hasAmountTotal = flow?.data_fields?.some(
+		(field) => field.name === 'amount_total',
+	);
 
 	const form = useForm<z.infer<typeof ticketNumberSchema>>({
 		resolver: zodResolver(ticketNumberSchema),
 		defaultValues: {
 			// ticketNumber: participation.serial_number || '',
 			ticketNumber: participation.participation_data?.serial_number || '',
+			amountTotal: '',
 		},
 	});
 
@@ -80,7 +89,9 @@ export default function TicketDialog({
 	};
 
 	const onSubmit = async (values: z.infer<typeof ticketNumberSchema>) => {
-		const success = await submitTicket(values.ticketNumber);
+		const amountTotal =
+			values.amountTotal ? parseFloat(values.amountTotal) : undefined;
+		const success = await submitTicket(values.ticketNumber, amountTotal);
 		if (success) form.reset();
 	};
 
@@ -134,6 +145,27 @@ export default function TicketDialog({
 											</FormItem>
 										)}
 									/>
+									{hasAmountTotal && (
+										<FormField
+											control={form.control}
+											name="amountTotal"
+											// eslint-disable-next-line @typescript-eslint/no-explicit-any
+											render={({ field }: { field: any }) => (
+												<FormItem className="col-span-2 h-fit">
+													<FormControl>
+														<Input
+															className="min-w-[250px]"
+															placeholder="Monto total"
+															type="number"
+															step="0.01"
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									)}
 									<div className="flex justify-center">
 										<Button
 											variant="secondary"

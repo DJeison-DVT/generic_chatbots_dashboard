@@ -42,16 +42,23 @@ export function useTicket(
 		}
 	};
 
-	const submitTicket = async (ticketNumber: string): Promise<boolean> => {
+	const submitTicket = async (
+		ticketNumber: string,
+		amountTotal?: number,
+	): Promise<boolean> => {
 		setDisabled(true);
 		try {
 			const url = `${settings.apiUrl}/dashboard/participations/${participation.id}/accept-participation`;
+			const body: Record<string, unknown> = {
+				serial_number: ticketNumber,
+			};
+			if (amountTotal != null) {
+				body.amount_total = amountTotal;
+			}
 			const response = await authorizedFetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					serial_number: ticketNumber,
-				}),
+				body: JSON.stringify(body),
 			});
 			if (!response.ok) {
 				// Serial number '{}' already used in participation {}
