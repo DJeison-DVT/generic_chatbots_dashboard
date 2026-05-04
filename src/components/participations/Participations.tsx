@@ -54,13 +54,18 @@ export default function Participations() {
 	const renderSubComponent = ({ row }: { row: Row<Participation> }) => {
 		const participation = row.original;
 		const user = participation.user;
+		const username =
+			(user.chatbot_data?.full_name as string) ||
+			user.name ||
+			'Cliente sin nombre';
 		const chatbotData = user.chatbot_data ?? {};
-		const participationData: Record<string, unknown> = participation.participation_data ?? {};
+		const participationData: Record<string, unknown> =
+			participation.participation_data ?? {};
 
 		return (
 			<div>
 				<p>
-					<strong>Nombre:</strong> {user.name}
+					<strong>Nombre:</strong> {username}
 				</p>
 				{Object.entries(CHATBOT_DATA_WHITELIST).map(([key, label]) => {
 					const value = chatbotData[key];
