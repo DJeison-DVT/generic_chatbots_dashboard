@@ -115,7 +115,7 @@ export default function DocumentationDialog({
 					Domicilio
 				</span>
 			</div>
-			<div className={`w-10 h-px ${step > 2 ? 'bg-muted-foreground' : 'bg-muted'}`} />
+			<div className={`w-10 h-px ${step > 2 ? (proofApproved ? 'bg-green-500' : 'bg-red-500') : 'bg-muted'}`} />
 
 			{/* Step 3: Resumen */}
 			<div className="flex items-center gap-1.5">
@@ -254,7 +254,7 @@ export default function DocumentationDialog({
 									</div>
 								</div>
 								<div className="flex gap-3 justify-end mt-2">
-									<Button variant="outline" onClick={() => setStep(1)}>
+									<Button variant="outline" onClick={() => setStep(2)}>
 										← Volver
 									</Button>
 									<Button

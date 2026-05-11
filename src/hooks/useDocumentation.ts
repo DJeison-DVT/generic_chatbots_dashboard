@@ -27,7 +27,9 @@ export function useDocumentation() {
 			}
 
 			const data = await response.json();
-			setUsers(data as DocumentationUser[]);
+			setUsers(
+				(data as DocumentationUser[]).filter((u) => u.chatbot_data != null),
+			);
 		} catch (error) {
 			handleCaughtError(error, 'Error fetching documentation users');
 		} finally {
@@ -36,53 +38,45 @@ export function useDocumentation() {
 	}, []);
 
 	const acceptDocumentation = async (userId: string) => {
-		try {
-			const response = await authorizedFetch(
-				`${settings.apiUrl}/dashboard/documentation/${userId}/accept`,
-				{ method: 'POST' },
+		const response = await authorizedFetch(
+			`${settings.apiUrl}/dashboard/documentation/${userId}/accept`,
+			{ method: 'POST' },
+		);
+
+		if (!response.ok) {
+			const body = await response.json();
+			handleApiError(
+				body.detail?.[0]?.msg || body.detail || 'Error al aprobar documentación',
+				response.status,
 			);
-
-			if (!response.ok) {
-				const body = await response.json();
-				handleApiError(
-					body.detail || 'Error al aprobar documentación',
-					response.status,
-				);
-				return;
-			}
-
-			toast({ title: 'Documentación aprobada' });
-			await fetchUsers();
-		} catch (error) {
-			handleCaughtError(error, 'Error accepting documentation');
+			throw new Error('Accept failed');
 		}
+
+		toast({ title: 'Documentación aprobada' });
+		await fetchUsers();
 	};
 
 	const rejectDocumentation = async (userId: string, verdict: DocumentationVerdict) => {
-		try {
-			const response = await authorizedFetch(
-				`${settings.apiUrl}/dashboard/documentation/${userId}/reject`,
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(verdict),
-				},
+		const response = await authorizedFetch(
+			`${settings.apiUrl}/dashboard/documentation/${userId}/reject`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(verdict),
+			},
+		);
+
+		if (!response.ok) {
+			const body = await response.json();
+			handleApiError(
+				body.detail?.[0]?.msg || body.detail || 'Error al rechazar documentación',
+				response.status,
 			);
-
-			if (!response.ok) {
-				const body = await response.json();
-				handleApiError(
-					body.detail || 'Error al rechazar documentación',
-					response.status,
-				);
-				return;
-			}
-
-			toast({ title: 'Documentación rechazada' });
-			await fetchUsers();
-		} catch (error) {
-			handleCaughtError(error, 'Error rejecting documentation');
+			throw new Error('Reject failed');
 		}
+
+		toast({ title: 'Documentación rechazada' });
+		await fetchUsers();
 	};
 
 	useEffect(() => {
