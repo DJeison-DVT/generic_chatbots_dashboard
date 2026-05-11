@@ -8,6 +8,7 @@ import DashboardLayout from '../components/DashboardLayout';
 import Participations from '../components/participations/Participations';
 import Prizes from '../components/prizes/Prizes';
 import Users from '../components/users/Users';
+import Documentation from '../components/documentation/Documentation';
 
 const router = createBrowserRouter([
 	{
@@ -50,6 +51,11 @@ const router = createBrowserRouter([
 					{
 						path: 'prizes',
 						element: <Prizes />,
+						loader: userOrAdminLoader,
+					},
+					{
+						path: 'documentation',
+						element: <Documentation />,
 						loader: userOrAdminLoader,
 					},
 					{

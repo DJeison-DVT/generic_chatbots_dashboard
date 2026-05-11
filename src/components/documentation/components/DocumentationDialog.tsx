@@ -139,7 +139,7 @@ export default function DocumentationDialog({
 		<div className="bg-dark/50 p-2 px-3.5 rounded-md mb-4 flex gap-4 items-center text-xs">
 			<span className="text-primary font-medium">{user.user_display_name}</span>
 			<span className="text-secondary">{user.number}</span>
-			{user.chatbot_data?.['email'] && (
+			{!!user.chatbot_data?.['email'] && (
 				<span className="text-muted-foreground">{String(user.chatbot_data['email'])}</span>
 			)}
 		</div>

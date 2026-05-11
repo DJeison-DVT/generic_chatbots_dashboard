@@ -1,5 +1,5 @@
 import { NavLink, useFetcher, useRouteLoaderData } from 'react-router-dom';
-import { Gauge, ShoppingCart, LogOut, Award } from 'lucide-react';
+import { Gauge, ShoppingCart, LogOut, Award, FileCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
 import React, { useState } from 'react';
@@ -88,6 +88,12 @@ function FlowSelector() {
 
 export default function Sidebar() {
 	let { role } = useRouteLoaderData('root') as { role: string | null };
+	const { flows } = useFlows();
+	const selectedFlowName = flowStore.getSelectedFlow();
+	const selectedFlow = flows.find((f) => f.name === selectedFlowName);
+	const hasDocumentationReview = selectedFlow?.data_fields?.some(
+		(f) => f.name === 'documentation_status',
+	);
 
 	return (
 		<div className="w-64 h-full flex flex-col">
@@ -120,6 +126,12 @@ export default function Sidebar() {
 								<Award />
 								Premios
 							</NavigationTab>
+							{hasDocumentationReview && (
+								<NavigationTab to="/dashboard/documentation">
+									<FileCheck />
+									Documentación
+								</NavigationTab>
+							)}
 							{/* {role === 'admin' && (
 								<NavigationTab to="/dashboard/users">
 									<Contact />
