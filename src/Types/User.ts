@@ -12,3 +12,12 @@ export type DashboardUser = {
 	username: string;
 	role: string;
 };
+
+export type UserDisplay = {
+	id: string;
+	number: string;
+	provider: string;
+	chatbot_flow: string;
+	user_display_name: string | null;
+	chatbot_data: Record<string, unknown> | null;
+};
