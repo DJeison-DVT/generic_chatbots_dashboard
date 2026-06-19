@@ -56,10 +56,10 @@ export default function Participations() {
 		const participation = row.original;
 		const user = participation.user;
 		const username =
-			(user.chatbot_data?.full_name as string) ||
-			user.name ||
+			(user?.chatbot_data?.full_name as string) ||
+			user?.name ||
 			'Cliente sin nombre';
-		const chatbotData = user.chatbot_data ?? {};
+		const chatbotData = user?.chatbot_data ?? {};
 		const participationData: Record<string, unknown> =
 			participation.participation_data ?? {};
 

@@ -10,7 +10,7 @@ const PAGE_SIZE = 10;
 
 interface RawParticipationItem {
 	id: string;
-	user_id: string;
+	user_id: string | null;
 	created_at: string;
 	updated_at: string;
 	current_step: string | null;
@@ -24,7 +24,7 @@ interface RawParticipationItem {
 		chatbot_flow: string;
 		user_display_name: string | null;
 		chatbot_data: Record<string, unknown> | null;
-	};
+	} | null;
 }
 
 export function useParticipations(searchParams: URLSearchParams) {
@@ -69,14 +69,16 @@ export function useParticipations(searchParams: URLSearchParams) {
 				(item: RawParticipationItem): Participation => ({
 					id: item.id,
 					user_id: item.user_id,
-					user: {
-						id: item.user.id,
-						phone: item.user.number,
-						provider: item.user.provider,
-						chatbot_flow: item.user.chatbot_flow,
-						name: item.user.user_display_name ?? '',
-						chatbot_data: item.user.chatbot_data,
-					},
+					user: item.user
+						? {
+								id: item.user.id,
+								phone: item.user.number,
+								provider: item.user.provider,
+								chatbot_flow: item.user.chatbot_flow,
+								name: item.user.user_display_name ?? '',
+								chatbot_data: item.user.chatbot_data,
+							}
+						: null,
 					created_at: new Date(item.created_at),
 					updated_at: new Date(item.updated_at),
 					current_step: item.current_step,

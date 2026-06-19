@@ -23,14 +23,19 @@ interface MessageHistoryProps {
 }
 
 export default function MessageHistory({ participation }: MessageHistoryProps) {
-	const phone = participation.user.phone;
+	const user = participation.user;
+	const phone = user?.phone;
 	const [isOpen, setIsOpen] = useState(false);
-	const { messages, isLoading } = useMessages(participation.user.id, isOpen);
+	const { messages, isLoading } = useMessages(user?.id ?? '', isOpen && !!user);
+
+	if (!user) {
+		return <div className="text-muted-foreground">Sin usuario</div>;
+	}
 
 	return (
 		<Sheet open={isOpen} onOpenChange={setIsOpen}>
 			<SheetTrigger>
-				<div className="text-blue-600">{phone.slice(-10)}</div>
+				<div className="text-blue-600">{phone?.slice(-10) ?? 'Sin teléfono'}</div>
 			</SheetTrigger>
 			<SheetContent className="flex flex-col bg-dark text-white flex-1 h-full">
 				<SheetHeader className="flex-0 flex flex-col">
@@ -48,7 +53,7 @@ export default function MessageHistory({ participation }: MessageHistoryProps) {
 							<ChatContainer>
 								<ConversationHeader>
 									<ConversationHeader.Content
-										userName={participation.user.name}
+										userName={user.name}
 									/>
 								</ConversationHeader>
 
@@ -73,7 +78,7 @@ export default function MessageHistory({ participation }: MessageHistoryProps) {
 											<Message.Header
 												sender={
 													message.from_ === phone
-														? participation.user.name
+														? user.name
 														: ''
 												}
 												sentTime={new Date(message.datetime).toLocaleString()}

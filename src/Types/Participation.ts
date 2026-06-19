@@ -9,8 +9,8 @@ export type ParticipationData =
 
 export type Participation = {
 	id: string;
-	user_id: string;
-	user: User;
+	user_id: string | null;
+	user: User | null;
 	created_at: Date;
 	updated_at: Date;
 	current_step: string | null;
