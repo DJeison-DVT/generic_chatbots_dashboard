@@ -49,6 +49,7 @@ export default function Participations() {
 	const IMAGE_WHITELIST: Record<string, string> = {
 		ine_front_url: 'INE Frontal',
 		ine_back_url: 'INE Posterior',
+		proof_of_address_url: 'Comprobante de Domicilio',
 	};
 
 	const renderSubComponent = ({ row }: { row: Row<Participation> }) => {

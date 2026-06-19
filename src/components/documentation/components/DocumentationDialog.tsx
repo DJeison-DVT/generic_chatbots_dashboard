@@ -45,12 +45,12 @@ export default function DocumentationDialog({
 
 	const handleIneVerdict = (approved: boolean) => {
 		setIneApproved(approved);
-		setStep(2);
+		setStep(proofApproved !== null ? 3 : 2);
 	};
 
 	const handleProofVerdict = (approved: boolean) => {
 		setProofApproved(approved);
-		setStep(3);
+		setStep(ineApproved !== null ? 3 : 1);
 	};
 
 	const handleSubmit = async () => {
@@ -60,9 +60,9 @@ export default function DocumentationDialog({
 				await onAccept(user.id);
 			} else {
 				const verdict: DocumentationVerdict = {
-					ine_front: ineApproved!,
-					ine_back: ineApproved!,
-					proof_of_address: proofApproved!,
+					ine_front: !ineApproved,
+					ine_back: !ineApproved,
+					proof_of_address: !proofApproved,
 				};
 				await onReject(user.id, verdict);
 			}
@@ -80,7 +80,7 @@ export default function DocumentationDialog({
 				<div
 					className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
 						step === 1
-							? 'bg-secondary text-primary'
+							? 'bg-accent text-white'
 							: ineApproved === true
 								? 'bg-green-500 text-white'
 								: ineApproved === false
@@ -90,18 +90,18 @@ export default function DocumentationDialog({
 				>
 					{step > 1 ? (ineApproved ? '✓' : '✗') : '1'}
 				</div>
-				<span className={`text-xs ${step === 1 ? 'text-primary' : ineApproved ? 'text-green-500' : ineApproved === false ? 'text-red-500' : 'text-muted-foreground'}`}>
+				<span className={`text-xs font-medium ${step === 1 ? 'text-accent font-bold' : ineApproved ? 'text-green-500' : ineApproved === false ? 'text-red-500' : 'text-gray-500'}`}>
 					INE
 				</span>
 			</div>
-			<div className={`w-10 h-px ${step > 1 ? (ineApproved ? 'bg-green-500' : 'bg-red-500') : 'bg-muted'}`} />
+			<div className={`w-10 h-px ${step > 1 ? (ineApproved ? 'bg-green-500' : 'bg-red-500') : 'bg-gray-600'}`} />
 
 			{/* Step 2: Domicilio */}
 			<div className="flex items-center gap-1.5">
 				<div
 					className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
 						step === 2
-							? 'bg-secondary text-primary'
+							? 'bg-accent text-white'
 							: proofApproved === true
 								? 'bg-green-500 text-white'
 								: proofApproved === false
@@ -111,24 +111,24 @@ export default function DocumentationDialog({
 				>
 					{step > 2 ? (proofApproved ? '✓' : '✗') : '2'}
 				</div>
-				<span className={`text-xs ${step === 2 ? 'text-primary' : proofApproved ? 'text-green-500' : proofApproved === false ? 'text-red-500' : 'text-muted-foreground'}`}>
+				<span className={`text-xs font-medium ${step === 2 ? 'text-accent font-bold' : proofApproved ? 'text-green-500' : proofApproved === false ? 'text-red-500' : 'text-gray-500'}`}>
 					Domicilio
 				</span>
 			</div>
-			<div className={`w-10 h-px ${step > 2 ? (proofApproved ? 'bg-green-500' : 'bg-red-500') : 'bg-muted'}`} />
+			<div className={`w-10 h-px ${step > 2 ? (proofApproved ? 'bg-green-500' : 'bg-red-500') : 'bg-gray-600'}`} />
 
 			{/* Step 3: Resumen */}
 			<div className="flex items-center gap-1.5">
 				<div
 					className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
 						step === 3
-							? 'bg-secondary text-primary'
+							? 'bg-accent text-white'
 							: 'bg-muted text-muted-foreground'
 					}`}
 				>
 					3
 				</div>
-				<span className={`text-xs ${step === 3 ? 'text-primary' : 'text-muted-foreground'}`}>
+				<span className={`text-xs font-medium ${step === 3 ? 'text-accent font-bold' : 'text-gray-500'}`}>
 					Resumen
 				</span>
 			</div>
@@ -137,10 +137,10 @@ export default function DocumentationDialog({
 
 	const userInfoBar = (
 		<div className="bg-dark/50 p-2 px-3.5 rounded-md mb-4 flex gap-4 items-center text-xs">
-			<span className="text-primary font-medium">{user.user_display_name}</span>
-			<span className="text-secondary">{user.number}</span>
+			<span className="text-white font-medium">{user.user_display_name}</span>
+			<span className="text-accent-foreground">{user.number.slice(13)}</span>
 			{!!user.chatbot_data?.['email'] && (
-				<span className="text-muted-foreground">{String(user.chatbot_data['email'])}</span>
+				<span className="text-gray-300">{String(user.chatbot_data['email'])}</span>
 			)}
 		</div>
 	);
@@ -162,31 +162,33 @@ export default function DocumentationDialog({
 						{/* Step 1: INE Front & Back */}
 						{step === 1 && (
 							<div className="flex flex-col gap-3">
-								<div className="bg-dark/30 rounded-lg p-2.5">
-									<div className="text-xs text-muted-foreground uppercase mb-1.5">INE Frente</div>
-									<FullImage
-										src={settings.bucketURL + (user.chatbot_data.ine_front_url ?? '')}
-										alt="INE Frente"
-									>
-										<img
+								<div className="flex gap-3">
+									<div className="bg-dark/30 rounded-lg p-2.5 flex-1">
+										<div className="text-xs text-muted-foreground uppercase mb-1.5">INE Frente</div>
+										<FullImage
 											src={settings.bucketURL + (user.chatbot_data.ine_front_url ?? '')}
 											alt="INE Frente"
-											className="w-full max-h-[200px] object-contain cursor-pointer"
-										/>
-									</FullImage>
-								</div>
-								<div className="bg-dark/30 rounded-lg p-2.5">
-									<div className="text-xs text-muted-foreground uppercase mb-1.5">INE Reverso</div>
-									<FullImage
-										src={settings.bucketURL + (user.chatbot_data.ine_back_url ?? '')}
-										alt="INE Reverso"
-									>
-										<img
+										>
+											<img
+												src={settings.bucketURL + (user.chatbot_data.ine_front_url ?? '')}
+												alt="INE Frente"
+												className="w-full max-h-[250px] object-contain cursor-pointer"
+											/>
+										</FullImage>
+									</div>
+									<div className="bg-dark/30 rounded-lg p-2.5 flex-1">
+										<div className="text-xs text-muted-foreground uppercase mb-1.5">INE Reverso</div>
+										<FullImage
 											src={settings.bucketURL + (user.chatbot_data.ine_back_url ?? '')}
 											alt="INE Reverso"
-											className="w-full max-h-[200px] object-contain cursor-pointer"
-										/>
-									</FullImage>
+										>
+											<img
+												src={settings.bucketURL + (user.chatbot_data.ine_back_url ?? '')}
+												alt="INE Reverso"
+												className="w-full max-h-[250px] object-contain cursor-pointer"
+											/>
+										</FullImage>
+									</div>
 								</div>
 								<div className="flex gap-3 justify-end mt-2">
 									<Button variant="destructive" onClick={() => handleIneVerdict(false)}>
@@ -230,9 +232,10 @@ export default function DocumentationDialog({
 						{step === 3 && (
 							<div className="flex flex-col gap-3">
 								<div
-									className={`bg-dark/30 p-3.5 rounded-lg flex justify-between items-center border-l-[3px] ${
+									className={`bg-dark/30 p-3.5 rounded-lg flex justify-between items-center border-l-[3px] cursor-pointer hover:opacity-80 ${
 										ineApproved ? 'border-l-green-500' : 'border-l-red-500'
 									}`}
+									onClick={() => setStep(1)}
 								>
 									<div>
 										<div className="text-sm font-medium text-primary">INE (Frente y Reverso)</div>
@@ -242,9 +245,10 @@ export default function DocumentationDialog({
 									</div>
 								</div>
 								<div
-									className={`bg-dark/30 p-3.5 rounded-lg flex justify-between items-center border-l-[3px] ${
+									className={`bg-dark/30 p-3.5 rounded-lg flex justify-between items-center border-l-[3px] cursor-pointer hover:opacity-80 ${
 										proofApproved ? 'border-l-green-500' : 'border-l-red-500'
 									}`}
+									onClick={() => setStep(2)}
 								>
 									<div>
 										<div className="text-sm font-medium text-primary">Comprobante de Domicilio</div>
@@ -254,9 +258,6 @@ export default function DocumentationDialog({
 									</div>
 								</div>
 								<div className="flex gap-3 justify-end mt-2">
-									<Button variant="outline" onClick={() => setStep(2)}>
-										← Volver
-									</Button>
 									<Button
 										variant="secondary"
 										onClick={handleSubmit}
