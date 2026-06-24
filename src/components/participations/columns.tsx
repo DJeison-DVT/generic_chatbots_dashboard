@@ -4,6 +4,7 @@ import DocumentsDataTableColumnHeaderCheckbox from '../tables/documents-checkbox
 import { DataTableColumnHeaderSearch } from '../tables/search-menu';
 import { isSelectedFilterFn } from './filters';
 import MessageHistory from './components/MessageHistory';
+import PrizeDetails from './components/PrizeDetails';
 import { Minus, Plus } from 'lucide-react';
 
 interface expandButtonProps {
@@ -122,8 +123,7 @@ export const columns: ColumnDef<Participation>[] = [
 		id: 'prize_name',
 		header: 'Premio',
 		cell: ({ row }) => {
-			const prizeName = row.getValue<string>('prize_name');
-			return prizeName ? <div className="max-w-48 truncate" title={prizeName}>{prizeName}</div> : null;
+			return <PrizeDetails participation={row.original} />;
 		},
 	},
 	{
