@@ -34,11 +34,11 @@ export default function MessageHistory({ participation }: MessageHistoryProps) {
 
 	return (
 		<Sheet open={isOpen} onOpenChange={setIsOpen}>
-			<SheetTrigger>
-				<div className="text-blue-600">{phone?.slice(-10) ?? 'Sin teléfono'}</div>
+			<SheetTrigger asChild>
+				<span className="text-blue-600 cursor-pointer">{phone?.slice(-10) ?? 'Sin teléfono'}</span>
 			</SheetTrigger>
 			<SheetContent className="flex flex-col bg-dark text-white flex-1 h-full">
-				<SheetHeader className="flex-0 flex flex-col">
+				<SheetHeader className="flex-none flex flex-col">
 					<SheetTitle className="text-white text-2xl ">
 						Historial de conversacion
 					</SheetTitle>
