@@ -18,7 +18,7 @@ import {
 	FormMessage,
 } from '../ui/form';
 import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group';
-import { CirclePlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
@@ -67,7 +67,10 @@ export default function UserCreationDialog({
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogTrigger asChild>
-				<CirclePlus className="text-dark hover:cursor-pointer" />
+				<Button variant="outline" size="sm" className="gap-1.5">
+					<UserPlus className="w-4 h-4" />
+					Nuevo usuario
+				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>

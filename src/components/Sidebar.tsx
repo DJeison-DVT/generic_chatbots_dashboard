@@ -64,6 +64,7 @@ function FlowSelector({ flows, isLoading }: FlowSelectorProps) {
 			const defaultFlow = flows[0].name;
 			setSelected(defaultFlow);
 			flowStore.setSelectedFlow(defaultFlow);
+			window.location.reload();
 		}
 	}, [flows, selected]);
 
