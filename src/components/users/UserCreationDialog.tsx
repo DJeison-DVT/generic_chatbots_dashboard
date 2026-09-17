@@ -125,6 +125,7 @@ export default function UserCreationDialog({
 										<ToggleGroup
 											type="single"
 											variant="outline"
+											value={field.value}
 											onValueChange={field.onChange}
 										>
 											<ToggleGroupItem value="admin">Administrador</ToggleGroupItem>
