@@ -23,11 +23,11 @@ function adminLoader() {
 	return null;
 }
 
-function userOrAdminLoader() {
-	if (authProvider.role !== 'user' && authProvider.role !== 'admin') {
+function validatorOrAdminLoader() {
+	if (authProvider.role !== 'validator' && authProvider.role !== 'admin') {
 		return redirect('/dashboard');
 	}
 	return null;
 }
 
-export { authenticatedLoader, protectedLoader, adminLoader, userOrAdminLoader };
+export { authenticatedLoader, protectedLoader, adminLoader, validatorOrAdminLoader };

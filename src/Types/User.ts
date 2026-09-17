@@ -11,6 +11,8 @@ export type DashboardUser = {
 	id: string;
 	username: string;
 	role: string;
+	phone?: string | null;
+	allowed_flows?: string[] | null;
 };
 
 export type UserDisplay = {
