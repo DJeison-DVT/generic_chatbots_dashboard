@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { useLoaderData } from 'react-router-dom';
 import { useAnalytics } from '../hooks/useAnalytics';
 import {
 	PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
@@ -5,6 +7,7 @@ import {
 } from 'recharts';
 import { Status, StatusDisplayOptions } from '../Types/Participation';
 import type { DailyCount } from '../hooks/useAnalytics';
+import ExtraordinaryParticipationsDialog from './ExtraordinaryParticipationsDialog';
 
 const STATUS_COLORS = [
 	'hsl(222, 47%, 11%)',
@@ -16,6 +19,10 @@ const STATUS_COLORS = [
 	'hsl(200, 15%, 46%)',
 	'hsl(220, 14%, 30%)',
 ];
+
+function getMexicanToday(): string {
+	return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
+}
 
 function StatCard({
 	label,
@@ -40,13 +47,50 @@ function StatCard({
 	);
 }
 
+interface ClickableTickProps {
+	x?: number | string;
+	y?: number | string;
+	payload?: { value: string };
+	isValidatorOrAdmin: boolean;
+	onDateClick: (date: string) => void;
+	mexicanToday: string;
+}
+
+function ClickableTick({ x = 0, y = 0, payload, isValidatorOrAdmin, onDateClick, mexicanToday }: ClickableTickProps) {
+	if (!payload) return null;
+	const date = payload.value;
+	const label = new Date(date + 'T00:00:00').toLocaleDateString('es', { day: '2-digit', month: 'short' });
+	const isClickable = isValidatorOrAdmin && date < mexicanToday;
+
+	return (
+		<text
+			x={x}
+			y={Number(y) + 10}
+			textAnchor="middle"
+			fontSize={12}
+			fill={isClickable ? 'hsl(222, 47%, 11%)' : 'hsl(215, 20%, 65%)'}
+			textDecoration={isClickable ? 'underline' : 'none'}
+			style={{ cursor: isClickable ? 'pointer' : 'default' }}
+			onClick={isClickable ? () => onDateClick(date) : undefined}
+		>
+			{label}
+		</text>
+	);
+}
+
 function DailyBarChart({
 	data,
 	loading,
+	isValidatorOrAdmin,
+	onDateClick,
 }: {
 	data: DailyCount[];
 	loading: boolean;
+	isValidatorOrAdmin: boolean;
+	onDateClick: (date: string) => void;
 }) {
+	const mexicanToday = getMexicanToday();
+
 	if (loading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
@@ -72,7 +116,17 @@ function DailyBarChart({
 		<ResponsiveContainer width="100%" height={300}>
 			<BarChart data={displayData}>
 				<CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-				<XAxis dataKey="label" tick={{ fontSize: 12 }} className="text-muted-foreground" />
+				<XAxis
+					dataKey="date"
+					tick={(props) => (
+						<ClickableTick
+							{...props}
+							isValidatorOrAdmin={isValidatorOrAdmin}
+							onDateClick={onDateClick}
+							mexicanToday={mexicanToday}
+						/>
+					)}
+				/>
 				<YAxis allowDecimals={false} tick={{ fontSize: 12 }} className="text-muted-foreground" />
 				<Tooltip
 					content={({ payload }) => {
@@ -86,7 +140,18 @@ function DailyBarChart({
 						);
 					}}
 				/>
-				<Bar dataKey="count" fill="hsl(222, 47%, 11%)" radius={[4, 4, 0, 0]} />
+				<Bar
+					dataKey="count"
+					fill="hsl(222, 47%, 11%)"
+					radius={[4, 4, 0, 0]}
+					style={{ cursor: isValidatorOrAdmin ? 'pointer' : 'default' }}
+					onClick={(data: unknown) => {
+						const d = data as { date: string };
+						if (isValidatorOrAdmin && d.date < mexicanToday) {
+							onDateClick(d.date);
+						}
+					}}
+				/>
 			</BarChart>
 		</ResponsiveContainer>
 	);
@@ -187,6 +252,9 @@ function StatusPieChart({
 }
 
 export default function Dashboard() {
+	const { role } = useLoaderData() as { role: string };
+	const isValidatorOrAdmin = role === 'validator' || role === 'admin';
+
 	const {
 		totalParticipations,
 		uniqueUsers,
@@ -194,16 +262,31 @@ export default function Dashboard() {
 		statusBreakdown,
 		dailyCounters,
 		isLoading,
+		refresh,
 	} = useAnalytics();
+
+	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
 	return (
 		<div className="flex-1 w-full overflow-auto bg-background p-6">
 			<div className="mx-auto max-w-5xl space-y-6">
 				<div className="rounded-lg border border-border bg-card p-6">
-					<h2 className="mb-4 text-sm font-medium text-muted-foreground">
-						Participaciones diarias
-					</h2>
-					<DailyBarChart data={dailyCounters} loading={isLoading} />
+					<div className="mb-4 flex items-center justify-between">
+						<h2 className="text-sm font-medium text-muted-foreground">
+							Participaciones diarias
+						</h2>
+						{isValidatorOrAdmin && (
+							<p className="text-xs text-muted-foreground">
+								Haz clic en una fecha pasada para registrar participaciones extraordinarias
+							</p>
+						)}
+					</div>
+					<DailyBarChart
+						data={dailyCounters}
+						loading={isLoading}
+						isValidatorOrAdmin={isValidatorOrAdmin}
+						onDateClick={setSelectedDate}
+					/>
 				</div>
 
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -231,6 +314,18 @@ export default function Dashboard() {
 					<StatusPieChart data={statusBreakdown} loading={isLoading} />
 				</div>
 			</div>
+
+			{selectedDate && (
+				<ExtraordinaryParticipationsDialog
+					date={selectedDate}
+					isOpen={true}
+					onClose={() => setSelectedDate(null)}
+					onSuccess={() => {
+						setSelectedDate(null);
+						refresh();
+					}}
+				/>
+			)}
 		</div>
 	);
 }

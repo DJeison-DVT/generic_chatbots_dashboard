@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import settings from '../settings';
 import { authorizedFetch } from '../auth';
 import { handleCaughtError } from './apiError';
@@ -33,6 +33,7 @@ export interface AnalyticsData {
 	statusBreakdown: StatusCount[];
 	dailyCounters: DailyCount[];
 	isLoading: boolean;
+	refresh: () => void;
 }
 
 export function useAnalytics(): AnalyticsData {
@@ -42,55 +43,59 @@ export function useAnalytics(): AnalyticsData {
 	const [statusBreakdown, setStatusBreakdown] = useState<StatusCount[]>([]);
 	const [dailyCounters, setDailyCounters] = useState<DailyCount[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [refreshKey, setRefreshKey] = useState(0);
 
-	useEffect(() => {
-		async function fetchAnalytics() {
-			const flowName = flowStore.getSelectedFlow();
-			if (!flowName) return;
+	const fetchAnalytics = useCallback(async () => {
+		const flowName = flowStore.getSelectedFlow();
+		if (!flowName) return;
 
-			const base = `${settings.apiUrl}/dashboard/analytics/flows/${flowName}`;
+		const base = `${settings.apiUrl}/dashboard/analytics/flows/${flowName}`;
+		setIsLoading(true);
 
-			try {
-				const [partRes, convRes, statusRes, dailyRes] = await Promise.all([
-					authorizedFetch(`${base}/participations/summary`),
-					authorizedFetch(`${base}/conversations/summary`),
-					authorizedFetch(`${base}/participations/by-status`),
-					authorizedFetch(`${base}/participations/daily-counters`),
-				]);
+		try {
+			const [partRes, convRes, statusRes, dailyRes] = await Promise.all([
+				authorizedFetch(`${base}/participations/summary`),
+				authorizedFetch(`${base}/conversations/summary`),
+				authorizedFetch(`${base}/participations/by-status`),
+				authorizedFetch(`${base}/participations/daily-counters`),
+			]);
 
-				if (partRes.ok) {
-					const data: ParticipationsSummary = await partRes.json();
-					setTotalParticipations(data.total);
-					const prizes = Object.values(data.by_prize_type).reduce(
-						(sum, v) => sum + v,
-						0,
-					);
-					setTotalPrizes(prizes);
-				}
-
-				if (convRes.ok) {
-					const data: ConversationsSummary = await convRes.json();
-					setUniqueUsers(data.unique_users);
-				}
-
-				if (statusRes.ok) {
-					const data: StatusCount[] = await statusRes.json();
-					setStatusBreakdown(data);
-				}
-
-				if (dailyRes.ok) {
-					const data: DailyCount[] = await dailyRes.json();
-					setDailyCounters(data);
-				}
-			} catch (error) {
-				handleCaughtError(error, 'Error fetching analytics');
-			} finally {
-				setIsLoading(false);
+			if (partRes.ok) {
+				const data: ParticipationsSummary = await partRes.json();
+				setTotalParticipations(data.total);
+				const prizes = Object.values(data.by_prize_type).reduce(
+					(sum, v) => sum + v,
+					0,
+				);
+				setTotalPrizes(prizes);
 			}
-		}
 
-		fetchAnalytics();
+			if (convRes.ok) {
+				const data: ConversationsSummary = await convRes.json();
+				setUniqueUsers(data.unique_users);
+			}
+
+			if (statusRes.ok) {
+				const data: StatusCount[] = await statusRes.json();
+				setStatusBreakdown(data);
+			}
+
+			if (dailyRes.ok) {
+				const data: DailyCount[] = await dailyRes.json();
+				setDailyCounters(data);
+			}
+		} catch (error) {
+			handleCaughtError(error, 'Error fetching analytics');
+		} finally {
+			setIsLoading(false);
+		}
 	}, []);
 
-	return { totalParticipations, uniqueUsers, totalPrizes, statusBreakdown, dailyCounters, isLoading };
+	useEffect(() => {
+		fetchAnalytics();
+	}, [fetchAnalytics, refreshKey]);
+
+	const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
+
+	return { totalParticipations, uniqueUsers, totalPrizes, statusBreakdown, dailyCounters, isLoading, refresh };
 }
