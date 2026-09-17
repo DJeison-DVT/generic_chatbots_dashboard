@@ -32,6 +32,7 @@ const formSchema = z.object({
 		message: 'Mayor a 6 caracteres.',
 	}),
 	role: z.string().min(1),
+	phone: z.string().optional(),
 });
 
 interface UserCreationDialogProps {
@@ -48,7 +49,8 @@ export default function UserCreationDialog({
 		defaultValues: {
 			username: '',
 			password: '',
-			role: 'user',
+			role: 'report',
+			phone: '',
 		},
 	});
 
@@ -101,6 +103,19 @@ export default function UserCreationDialog({
 						/>
 						<FormField
 							control={form.control}
+							name="phone"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Teléfono (opcional)</FormLabel>
+									<FormControl>
+										<Input placeholder="+521234567890" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
 							name="role"
 							render={({ field }) => (
 								<FormItem>
@@ -112,15 +127,9 @@ export default function UserCreationDialog({
 											variant="outline"
 											onValueChange={field.onChange}
 										>
-											<ToggleGroupItem value="admin">
-												Administrador
-											</ToggleGroupItem>
-											<ToggleGroupItem value="user">
-												Verificador
-											</ToggleGroupItem>
-											<ToggleGroupItem value="viewer">
-												Visualizador
-											</ToggleGroupItem>
+											<ToggleGroupItem value="admin">Administrador</ToggleGroupItem>
+											<ToggleGroupItem value="validator">Validador</ToggleGroupItem>
+											<ToggleGroupItem value="report">Reporte</ToggleGroupItem>
 										</ToggleGroup>
 									</div>
 									<FormMessage />

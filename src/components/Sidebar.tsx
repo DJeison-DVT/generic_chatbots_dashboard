@@ -1,5 +1,5 @@
 import { NavLink, useFetcher, useRouteLoaderData } from 'react-router-dom';
-import { Gauge, ShoppingCart, LogOut, Award, FileCheck } from 'lucide-react';
+import { Gauge, ShoppingCart, LogOut, Award, FileCheck, Contact } from 'lucide-react';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
 import React, { useState } from 'react';
@@ -107,7 +107,7 @@ export default function Sidebar() {
 			<div className="flex flex-col bg-dark flex-1">
 				<FlowSelector />
 				<nav className="flex flex-col  text-primary flex-1 *:p-4">
-					{role === 'viewer' ? (
+					{role === 'report' ? (
 						<NavigationTab to="/dashboard" end>
 							<Gauge />
 							Dashboard
@@ -132,12 +132,12 @@ export default function Sidebar() {
 									Documentación
 								</NavigationTab>
 							)}
-							{/* {role === 'admin' && (
+							{role === 'admin' && (
 								<NavigationTab to="/dashboard/users">
 									<Contact />
 									Usuarios
 								</NavigationTab>
-							)} */}
+							)}
 						</>
 					)}
 				</nav>

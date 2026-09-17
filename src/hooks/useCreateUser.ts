@@ -11,6 +11,7 @@ export function useCreateUser(onSuccess: () => Promise<void>) {
 		username: string;
 		password: string;
 		role: string;
+		phone?: string;
 	}) => {
 		setIsLoading(true);
 		try {
