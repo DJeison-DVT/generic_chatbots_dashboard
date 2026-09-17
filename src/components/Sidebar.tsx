@@ -5,6 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
 import React, { useState } from 'react';
 import { useFlows } from '../hooks/useFlows';
 import { flowStore } from '../flowStore';
+import { Flow } from '../Types/Flow';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 function AuthStatus() {
 	let { user } = useRouteLoaderData('root') as { user: string | null };
@@ -49,8 +51,12 @@ const NavigationTab: React.FC<NavigationTabProps> = ({
 	);
 };
 
-function FlowSelector() {
-	const { flows, isLoading } = useFlows();
+interface FlowSelectorProps {
+	flows: Flow[];
+	isLoading: boolean;
+}
+
+function FlowSelector({ flows, isLoading }: FlowSelectorProps) {
 	const [selected, setSelected] = useState(flowStore.getSelectedFlow() ?? '');
 
 	React.useEffect(() => {
@@ -88,25 +94,38 @@ function FlowSelector() {
 
 export default function Sidebar() {
 	let { role } = useRouteLoaderData('root') as { role: string | null };
-	const { flows } = useFlows();
+	const { flows, isLoading: flowsLoading } = useFlows();
+	const { currentUser } = useCurrentUser();
+
+	const visibleFlows: Flow[] = role === 'report'
+		? flows.filter(f => currentUser?.allowed_flows?.includes(f.name) ?? false)
+		: flows;
+
+	// If the previously selected flow is no longer visible, clear it and reload
+	React.useEffect(() => {
+		const selected = flowStore.getSelectedFlow();
+		if (
+			selected &&
+			visibleFlows.length > 0 &&
+			!visibleFlows.find(f => f.name === selected)
+		) {
+			flowStore.clear();
+			window.location.reload();
+		}
+	}, [visibleFlows]);
+
 	const selectedFlowName = flowStore.getSelectedFlow();
-	const selectedFlow = flows.find((f) => f.name === selectedFlowName);
+	const selectedFlow = visibleFlows.find(f => f.name === selectedFlowName);
 	const hasDocumentationReview = selectedFlow?.data_fields?.some(
-		(f) => f.name === 'documentation_status',
+		f => f.name === 'documentation_status',
 	);
 
 	return (
 		<div className="w-64 h-full flex flex-col">
-			<div className="bg-primary w-64 flex justify-center py-2 h-20">
-				{/* <img
-					src="/demente-logo.png"
-					alt="demente logo"
-					className="invert w-60"
-				/> */}
-			</div>
+			<div className="bg-primary w-64 flex justify-center py-2 h-20" />
 			<div className="flex flex-col bg-dark flex-1">
-				<FlowSelector />
-				<nav className="flex flex-col  text-primary flex-1 *:p-4">
+				<FlowSelector flows={visibleFlows} isLoading={flowsLoading} />
+				<nav className="flex flex-col text-primary flex-1 *:p-4">
 					{role === 'report' ? (
 						<NavigationTab to="/dashboard" end>
 							<Gauge />
