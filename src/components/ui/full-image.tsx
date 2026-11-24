@@ -4,6 +4,7 @@ import {
     DialogContent,
     DialogDescription,
     DialogHeader,
+    DialogTitle,
     DialogTrigger,
 } from './dialog';
 import '../styles/full-image.css';
@@ -46,7 +47,8 @@ export default function FullImage({
             <DialogTrigger>{children}</DialogTrigger>
             <DialogContent className="max-w-fit max-h-screen overflow-auto">
                 <DialogHeader>
-                    <DialogDescription>
+                    <DialogTitle className="sr-only">{alt}</DialogTitle>
+                    <DialogDescription asChild>
                         <div className="w-full px-4 h-full flex gap-4">
                             <figure
                                 className="zoom"

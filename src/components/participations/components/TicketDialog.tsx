@@ -31,13 +31,6 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '../../ui/alert-dialog';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '../../ui/select';
 import settings from '../../../settings';
 import { Participation } from '../../../Types/Participation';
 import FullImage from '../../ui/full-image';
@@ -63,6 +56,13 @@ export default function TicketDialog({
 	const [isOpen, setIsOpen] = useState(false);
 	const { flows } = useFlows();
 
+	const loteUrls = (participation.participation_data as Record<string, unknown>)
+		?.lote_urls as string[] | undefined;
+	const flowHasLoteUrls = flow?.data_fields?.some(
+		(field) => field.name === 'lote_urls',
+	);
+	const hasLoteUrls = !!flowHasLoteUrls && !!loteUrls && loteUrls.length > 0;
+
 	const flow = flows.find((f) => f.name === participation.flow_name);
 	const hasAmountTotal = flow?.data_fields?.some(
 		(field) => field.name === 'amount_total',
@@ -74,7 +74,6 @@ export default function TicketDialog({
 	const form = useForm<z.infer<typeof ticketNumberSchema>>({
 		resolver: zodResolver(ticketNumberSchema),
 		defaultValues: {
-			// ticketNumber: participation.serial_number || '',
 			ticketNumber: participation.participation_data?.serial_number || '',
 			amountTotal: '',
 			productPoints: '',
@@ -120,6 +119,7 @@ export default function TicketDialog({
 					<DialogTitle>Validación de Ticket</DialogTitle>
 				</DialogHeader>
 				<DialogDescription asChild>
+					<div className="flex-1 min-h-0 overflow-y-auto">
 					<div className="flex h-80">
 						<div className="min-w-[500px]">
 							<FullImage
@@ -231,23 +231,31 @@ export default function TicketDialog({
 									<AlertDialogContent className="w-fit">
 										<AlertDialogHeader>
 											<AlertDialogTitle>Motivo de Rechazo</AlertDialogTitle>
-											<AlertDialogDescription>
-												<Select onValueChange={setReason} defaultValue={reason}>
-													<SelectTrigger className="w-[180px]">
-														<SelectValue placeholder="Motivo" />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="No Legible">
-															No Legible
-														</SelectItem>
-														<SelectItem value="Ticket invalido">
-															Ticket invalido
-														</SelectItem>
-														<SelectItem value="Folio Repetido">
-															Folio Repetido
-														</SelectItem>
-													</SelectContent>
-												</Select>
+											<AlertDialogDescription asChild>
+												<div className="flex flex-col gap-2">
+													{[
+														'No Legible',
+														'Ticket invalido',
+														'Folio Repetido',
+														...(!hasLoteUrls
+															? ['Sin fotos de lote']
+															: []),
+													].map((value) => (
+														<label
+															key={value}
+															className="flex items-center gap-2 cursor-pointer"
+														>
+															<input
+																type="radio"
+																name="rejection-reason"
+																value={value}
+																checked={reason === value}
+																onChange={() => setReason(value)}
+															/>
+															{value}
+														</label>
+													))}
+												</div>
 											</AlertDialogDescription>
 										</AlertDialogHeader>
 										<AlertDialogFooter>
@@ -264,7 +272,29 @@ export default function TicketDialog({
 							)}
 						</div>
 					</div>
+					</div>
 				</DialogDescription>
+				{hasLoteUrls && (
+					<div className="border-t pt-3 px-2 shrink">
+						<p className="text-sm font-medium mb-2">Fotos de lote</p>
+						<div className="flex gap-2 overflow-x-auto pb-2">
+							{loteUrls.map((url, index) => (
+									<div key={index} className="shrink-0">
+										<FullImage
+											src={`${settings.bucketURL + url}`}
+											alt={`Lote ${index + 1}`}
+										>
+											<img
+												className="h-24 w-auto rounded border cursor-pointer hover:opacity-80 transition-opacity"
+												src={`${settings.bucketURL + url}`}
+												alt={`Lote ${index + 1}`}
+											/>
+										</FullImage>
+									</div>
+								))}
+						</div>
+					</div>
+				)}
 			</DialogContent>
 		</Dialog>
 	);
