@@ -45,6 +45,7 @@ export function useTicket(
 	const submitTicket = async (
 		ticketNumber: string,
 		amountTotal?: number,
+		productPoints?: number,
 	): Promise<boolean> => {
 		setDisabled(true);
 		try {
@@ -54,6 +55,9 @@ export function useTicket(
 			};
 			if (amountTotal != null) {
 				body.amount_total = amountTotal;
+			}
+			if (productPoints != null) {
+				body.product_points = productPoints;
 			}
 			const response = await authorizedFetch(url, {
 				method: 'POST',

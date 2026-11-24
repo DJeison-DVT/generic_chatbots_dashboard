@@ -47,6 +47,7 @@ import { useFlows } from '../../../hooks/useFlows';
 const ticketNumberSchema = z.object({
 	ticketNumber: z.string(),
 	amountTotal: z.string().optional(),
+	productPoints: z.string().optional(),
 });
 
 interface TicketDialogProps {
@@ -66,6 +67,9 @@ export default function TicketDialog({
 	const hasAmountTotal = flow?.data_fields?.some(
 		(field) => field.name === 'amount_total',
 	);
+	const hasProductPoints = flow?.data_fields?.some(
+		(field) => field.name === 'product_points',
+	);
 
 	const form = useForm<z.infer<typeof ticketNumberSchema>>({
 		resolver: zodResolver(ticketNumberSchema),
@@ -73,6 +77,7 @@ export default function TicketDialog({
 			// ticketNumber: participation.serial_number || '',
 			ticketNumber: participation.participation_data?.serial_number || '',
 			amountTotal: '',
+			productPoints: '',
 		},
 	});
 
@@ -91,7 +96,13 @@ export default function TicketDialog({
 	const onSubmit = async (values: z.infer<typeof ticketNumberSchema>) => {
 		const amountTotal =
 			values.amountTotal ? parseFloat(values.amountTotal) : undefined;
-		const success = await submitTicket(values.ticketNumber, amountTotal);
+		const productPoints =
+			values.productPoints ? parseInt(values.productPoints, 10) : undefined;
+		const success = await submitTicket(
+			values.ticketNumber,
+			amountTotal,
+			productPoints,
+		);
 		if (success) form.reset();
 	};
 
@@ -158,6 +169,27 @@ export default function TicketDialog({
 															placeholder="Monto total"
 															type="number"
 															step="0.01"
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									)}
+									{hasProductPoints && (
+										<FormField
+											control={form.control}
+											name="productPoints"
+											// eslint-disable-next-line @typescript-eslint/no-explicit-any
+											render={({ field }: { field: any }) => (
+												<FormItem className="col-span-2 h-fit">
+													<FormControl>
+														<Input
+															className="min-w-[250px]"
+															placeholder="Puntos de producto"
+															type="number"
+															step="1"
 															{...field}
 														/>
 													</FormControl>
